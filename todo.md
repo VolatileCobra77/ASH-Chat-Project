@@ -5,7 +5,7 @@
 
 giving messages ids might be helpful for things such as deleting or replying to messages.
 
-pinning messages would make it so the message doesn't disapear upon reloding or clearing the screen
+pinning messages would make it so the message doesn't disapear upon reloading or clearing the screen
 
 moderation?
 ## copying
