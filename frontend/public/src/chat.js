@@ -127,7 +127,7 @@ function help(){
     addInfo('<h1>Command Descriptions</h1><ul class="list-group list-group-numbered"><li class="list-group-item">!help - shows this message</li><li class="list-group-item">!clear - clears the screen</li><li class="list-group-item ">!disconnect - disconnects from the session</li></ul><h1>Possible commands in the future</h1><ul class="list-group list-group-numbered">   <li class="list-group-item">!channels list - shows avalible channels</li>   <li class="list-group-item">!channels create [type] [name] - crates a channel, type is private or public, name is the name of the channel</li>   <li class="list-group-item">!channels invite [email] (channel) - invites specified user to channel if it is private, if a channel is specified after the user it invites them to that instead.</li></ul>') //long-ass line of code
 }
 
-const commandList = ["!clear", "!disconnect", "!help", "!reconnect", "channels"]
+const commandList = ["!clear", "!disconnect", "!help", "!reconnect", "!channels"]
 //? !channel join [channel], !channel list
 //? private channels could start with an `!`, not showing in `!channel list`
 //? default could be `main`
