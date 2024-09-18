@@ -218,7 +218,7 @@ app.get("/api/tokenTester",(req,res)=>{
     authenticateToken(req,res,(err,user)=>{
         if(err){
             res.json({"authenticated":false})
-            console.log("Token was Invalid")
+            console.log("Token was Invalid yes")
             return
         }
         res.json({"authenticated":true})
