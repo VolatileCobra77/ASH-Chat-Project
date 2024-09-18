@@ -1,0 +1,190 @@
+p.testing {
+    font-family: roboto;
+}
+
+body {
+    font-family: Lexend, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f5f5f5;
+    width: 100vw;
+}
+
+.chat-window {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin: 10px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    scroll-behavior: smooth;
+}
+
+#message-input {
+    display: flex;
+    padding: 10px;
+    margin: 0 10px 10px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+}
+
+#message-input input {
+    flex-grow: 1;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+    outline: none;
+}
+
+#message-input input:focus {
+    border-color: #28a745;
+}
+
+#message-input button {
+    padding: 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#message-input button:hover {
+    background-color: #218838;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#chat-window .message:last-child {
+    animation: fadeIn 0.5s ease-in-out;
+    overflow-wrap: break-word;
+}
+
+.online-content .friends-content .groups-content {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.username {
+    font-weight: bold;
+}
+
+.ip {
+    font-size: 0.8em;
+    color: grey;
+    margin-left: 5px;
+}
+
+.server-message {
+    color: #b8860b;
+    font-weight: bold;
+}
+
+.timestamp {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.8em;
+    color: black;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+/*
+rust code jumpscare:
+
+fn main() {
+println!("hihi");
+}
+*/
+
+.copy-icon {
+    width: 12px;
+    height: 12px;
+    margin-left: 5px;
+    fill: grey;
+    cursor: pointer;
+}
+/* Hide the default file input */
+#file-upload {
+    display: none;
+  }
+  
+  /* Style the custom label as the button */
+  .custom-file-upload {
+    display: inline-block;
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    border: none;
+  }
+  
+  /* Add a hover effect for the custom button */
+  .custom-file-upload:hover {
+    background-color: #0056b3;
+  }
+  .editable-input {
+    border: none;
+    background: none;
+    font-size: 16px;
+    color: black;
+    width: 100px;
+    padding: 5px;
+    outline: none;
+  }
+
+  .editable-input:not(:focus) {
+    pointer-events: none;
+  }
+
+  .editable-input:focus {
+    border: 1px solid #ccc;
+    background-color: white;
+  }
+  .copyBtn{
+    text-decoration: none;
+    color: black;
+    size: 100%;
+    transition: text-decoration 0.3s ease-in-out, size 0.3s ease-in-out;
+  }
+  .copyBtn:hover{
+    text-decoration: underline;
+    color:#272727;
+    size: 110%;
+    transition: text-decoration 0.3s ease-in-out, size 0.3s ease-in-out;
+  }

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <title>chat</title>
+        <link rel="stylesheet" href="/public/src/output.css">
+        <link rel="stylesheet" href="/public/src/custom.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:b|Lexend">
+    </head>
+    <body class="d-flex flex-column vh-100">
+        <!-- Navbar section -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center">
+                    <ul class="nav nav-tabs w-100 justify-content-center" id="navbar" role="tablist">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link active" aria-current="page">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/chat" class="nav-link">Chat</a>
+                        </li>
+                        <li class="nav-item dropdown" id="accountBtn">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="/Profile/Settings">Settings</a>
+                                <a class="dropdown-item" href="/Profile">Profile</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="#" onclick="logout()">logout</a>
+                                <a class="dropdown-item text-danger" href="/Profile/Delete">Delete</a>
+                            </div>
+                        </li>
+                        <li class="nav-item" id="loginBtn">
+                            <a href="/login" class="nav-link">Login/Signup</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="/public/src/shared.js"></script>
+    <script src="/public/src/home.js"></script>
+</html>

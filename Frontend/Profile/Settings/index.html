@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <title>chat</title>
+        <link rel="stylesheet" href="/public/src/output.css">
+        <link rel="stylesheet" href="/public/src/custom.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:b|Lexend">
+    </head>
+    <body class="">
+        <!-- Navbar section -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center">
+                    <ul class="nav nav-tabs w-100 justify-content-center" id="navbar" role="tablist">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link" aria-current="page">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/chat" class="nav-link">Chat</a>
+                        </li>
+                        <li class="nav-item dropdown" id="accountBtn">
+                            <a class="nav-link dropdown-toggle active" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="/Profile/Settings">Settings</a>
+                                <a class="dropdown-item" href="/Profile">Profile</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="#" onclick="logout()">logout</a>
+                                <a class="dropdown-item text-danger" href="/Profile/Delete">Delete</a>
+                            </div>
+                        </li>
+                        <li class="nav-item" id="loginBtn">
+                            <a href="/login" class="nav-link">Login/Signup</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        
+            <div class="row">
+                <div class="col-3 overflow-y-auto" id="sidebar">
+                    <div class="accordion accordion-flush" id="accordionFlushExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="flush-headingOne">
+                                <button
+                                    class="accordion-button collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseOne"
+                                    aria-expanded="true"
+                                    aria-controls="flush-collapseOne"
+                                >
+                                    Account
+                                </button>
+                            </h2>
+                            <div
+                                id="flush-collapseOne"
+                                class="accordion-collapse collapse"
+                                aria-labelledby="flush-headingOne"
+                                data-bs-parent="#accordionFlushExample"
+                            >
+                                <div class="accordion-body">
+                                    <ul class="list-unstyled">
+                                        <li><a id="chgLooks" class="link-secondary" href="#">Change How You Appear</a></li>
+                                        <li><a id="chgDetails" class="link-secondary" href="#">Change Account Details</a></li>
+                                        <li><a id="delete" class="link-danger" href="#">Delete Account</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="flush-headingTwo">
+                                <button
+                                    class="accordion-button collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseTwo"
+                                    aria-expanded="true"
+                                    aria-controls="flush-collapseTwo"
+                                >
+                                    Website Settings
+                                </button>
+                            </h2>
+                            <div
+                                id="flush-collapseTwo"
+                                class="accordion-collapse collapse"
+                                aria-labelledby="flush-headingTwo"
+                                data-bs-parent="#accordionFlushExample"
+                            >
+                                <div class="accordion-body">
+                                    <ul class="list-unstyled">
+                                        <li><a id="chgTheme" class="link-secondary" href="#">Change Your Theme</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="col-9" id="content">
+                    <h1>Change How You Appear</h1>
+                    <p>Here you can update your profile picture and customize how others see you.</p>
+                    <hr>
+                    <h2>Profile</h2>
+                    <img id="profileImg" src="/public/media/root/default_pfp.png" alt="Default Profile Picture">
+                    <br>
+                    <br>
+                    <label for="file-upload" class="custom-file-upload">
+                    Select a new profile picture
+                    </label>
+                    <input id="file-upload" type="file" accept=".png"/>
+                    <br>
+                    <br>
+                    <input type="text" id="editableText" value="Username Here">
+                    <br>
+                    <br>
+                    <p style="color: black;">This is what your messages would look like</p>
+                    <label for="usrColor">Change Color:</label><br>
+                    <input type="color" id="usrColor"><br>
+                    <button class="btn btn-primary" onclick="saveChanges()">Save Changes</button>
+
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="/public/src/shared.js"></script>
+    <script src="/public/src/settings.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            // Change content for "Change How You Appear"
+            $('#chgLooks').click(function(event) {
+    event.preventDefault();
+    
+    // Get the token from localStorage
+    const token = localStorage.getItem("token");
+
+    // Fetch the profile image URL from the API
+    fetch('/api/profile/getPFP', {
+        method: 'POST', // Assuming the endpoint expects a POST request
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: token }) // Send token as the body
+    })
+    .then(response => response.json()) // Parse the JSON response
+    .then(data => {
+        // Assuming the API returns { imageUrl: "someURL" }
+        const imageUrl = data.path;
+
+        // Update the content with the fetched profile image
+        $('#content').html(`
+            <h1>Change How You Appear</h1>
+                    <p>Here you can update your profile picture and customize how others see you.</p>
+                    <hr>
+                    <h2>Profile</h2>
+                    <img id="profileImg" src="${imageUrl}" alt="Default Profile Picture">
+                    <br>
+                    <br>
+                    <label for="file-upload" class="custom-file-upload">
+                    Select a new profile picture
+                    </label>
+                    <input id="file-upload" type="file" accept=".png"/>
+                    <br>
+                    <br>
+                    <input type="text" id="editableText" value="${localStorage.getItem('username')}">
+                    <br>
+                    <br>
+                    <p style="color: black;">This is what your messages would look like</p>
+                    <label for="usrColor">Change Color:</label><br>
+                    <input type="color" id="usrColor"><br>
+                    <button class="btn btn-primary" onclick="saveChanges()">Save Changes</button>
+        `);
+    })
+    .catch(error => {
+        console.error('Error fetching profile image:', error);
+    });
+});
+
+            // Change content for "Change Account Details"
+            $('#chgDetails').click(function(event) {
+                event.preventDefault();
+                $('#content').html(`
+                    <h2>Change Account Details</h2>
+                    <p>Update your email, password, and other account information here.</p>
+                `);
+            });
+
+            // Change content for "Delete Account"
+            $('#delete').click(function(event) {
+                event.preventDefault();
+                $('#content').html(`
+                    <h2>Delete Account</h2>
+                    <p><strong>Warning:</strong> Deleting your account is irreversible. All your data will be lost.</p>
+                    <button class="btn btn-danger">Confirm Delete</button>
+                `);
+            });
+            $('#chgTheme').click(function(event) {
+                event.preventDefault();
+                $('#content').html(`
+                    <h2>Change Theme</h2>
+                        <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Select Theme
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="themeDropdown">
+            <li><a class="dropdown-item" href="#" onclick="applyLightTheme()" id="lightTheme">Light Theme</a></li>
+            <li><a class="dropdown-item" href="#" onclick="applyDarkTheme()" id="darkTheme">Dark Theme</a></li>
+            <li><a class="dropdown-item" href="#" onclick="applyTheme("neon") id="neonTheme">Neon Theme</a></li>
+        </ul>
+    </div>
+
+    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#customThemeModal">Custom Theme</button>
+
+    <!-- Custom Theme Modal -->
+    <div class="modal fade" id="customThemeModal" tabindex="-1" aria-labelledby="customThemeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customThemeModalLabel">Create Custom Theme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bgColorInput" class="form-label">Background Color</label>
+                        <input type="color" class="form-control" id="bgColorInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="textColorInput" class="form-label">Text Color</label>
+                        <input type="color" class="form-control" id="textColorInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="chatWinColorInput" class="form-label">Chat Window Background Color</label>
+                        <input type="color" class="form-control" id="chatWinColorInput">
+                    </div>
+                   <div class="mb-3">
+                        <label for="inputWinColorInput" class="form-label">Input Window Background Color</label>
+                        <input type="color" class="form-control" id="inputWinColorInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputTxtColorInput" class="form-label">Input Window Text Color</label>
+                        <input type="color" class="form-control" id="inputTxtColorInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputBorderColorInput" class="form-label">Input Window Border Color</label>
+                        <input type="color" class="form-control" id="inputBorderColorInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="sendBtnBgInput" class="form-label">Send Button Background Color</label>
+                        <input type="color" class="form-control" id="sendBtnBgInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="msgBgInput" class="form-label">Message Background Color</label>
+                        <input type="color" class="form-control" id="msgBgInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timestampColorInput" class="form-label">Timestamp Color</label>
+                        <input type="color" class="form-control" id="timestampColorInput">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ipColorInput" class="form-label">Ip Color</label>
+                        <input type="color" class="form-control" id="ipColorInput">
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="applyCustomTheme" onclick="applyCustomTheme()">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+                `);
+            });
+        });
+    </script>
+
+</html>
