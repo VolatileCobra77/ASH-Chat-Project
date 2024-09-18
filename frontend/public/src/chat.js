@@ -11,7 +11,7 @@ function addInfo(message, time){
     msgReturn.innerHTML += `<div class="alert alert-info message" role="alert"><strong>SERVER: </strong>INFO: ${message} <span style="font-size: x-small; ">(Authentic Server Message)</span><span class="float-end me-3"<p> ${time} </p> </span></div>`
 }
 function addMsg(Sender, senderIp, senderColor, message, time){
-    msgReturn.innerHTML += `<div class=" alert alert-primary message" role="alert"><strong style="color:${senderColor};">${Sender}: </strong>${message} <span style="font-size: x-small; ">(from ${senderIp})</span><span class="float-end me-3 "><p> ${time} </p> <a href="#" class="" onclick="copyText('${message}')"><i class="copyBtn fa-solid fa-copy"></i></a></span></div>`
+    msgReturn.innerHTML += `<div class=" alert alert-primary message" role="alert"><strong style="color:${senderColor};">${Sender}: </strong>${message} <span style="font-size: x-small; ">(from ${senderIp})</span><span class="float-end me-3 d-flex flex-row"><p style="margin-right:10px;"> ${time} </p> <a href="#" class="" onclick="copyText('${message}')"><i class="copyBtn fa-solid fa-copy"></i></a></span></div>`
 }//Wrap all A tags in a span
 
 const host = window.location.hostname;  // Get the current hostname (e.g., localhost or 168.99.44.34)
@@ -127,12 +127,12 @@ function help(){
     addInfo('<h1>Command Descriptions</h1><ul class="list-group list-group-numbered"><li class="list-group-item">!help - shows this message</li><li class="list-group-item">!clear - clears the screen</li><li class="list-group-item ">!disconnect - disconnects from the session</li></ul><h1>Possible commands in the future</h1><ul class="list-group list-group-numbered">   <li class="list-group-item">!channels list - shows avalible channels</li>   <li class="list-group-item">!channels create [type] [name] - crates a channel, type is private or public, name is the name of the channel</li>   <li class="list-group-item">!channels invite [email] (channel) - invites specified user to channel if it is private, if a channel is specified after the user it invites them to that instead.</li></ul>') //long-ass line of code
 }
 
-const commandList = ["!clear", "!disconnect", "!help", "!reconnect"]
+const commandList = ["!clear", "!disconnect", "!help", "!reconnect", "channels"]
 //? !channel join [channel], !channel list
 //? private channels could start with an `!`, not showing in `!channel list`
 //? default could be `main`
 
-const commandValues = [clearScreen, disconnect, help, reconnect]
+const commandValues = [clearScreen, disconnect, help, reconnect, channels]
 
 document.getElementById("message-input").addEventListener("submit", (event) => {
     event.preventDefault(); // Prevents form from submitting and reloading the page
@@ -232,8 +232,10 @@ async function getOnlineUsers(){
     let outputList = []
 
     for (user of resJson){
-        outputList.push({"username":user.wsConnection.user.username, "status":user.type})
+        outputList.push({"username":user.username, "status":user.type})
+            
     }
+    
     outputList = sortUsers(outputList)
     let onlineContent = document.getElementById("onlineContent")
     onlineContent.innerHTML = ""

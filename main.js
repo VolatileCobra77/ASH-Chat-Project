@@ -19,7 +19,7 @@ app.use(express.json());
 
 function makeMediaFolders(email){
     const sanitizedEmail = email.replace(/[^\w.-]/g, '');
-    const pathToMake = path.join(__dirname, 'Frontend', 'public', 'media',sanitizedEmail)
+    const pathToMake = path.join(__dirname, 'frontend', 'public', 'media',sanitizedEmail)
     fs.mkdirSync(pathToMake, {recursive:true})
     fs.mkdirSync(path.join(pathToMake, 'images'))
     fs.mkdirSync(path.join(pathToMake, 'videos'))
@@ -35,7 +35,7 @@ function readBlockList(){
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const email = req.body.email
-      const uploadPath = path.join(__dirname, 'Frontend/public/media', email);
+      const uploadPath = path.join(__dirname, 'frontend/public/media', email);
   
       // Check if the folder exists, if not, create it
       if (!fs.existsSync(uploadPath)) {
@@ -109,7 +109,7 @@ const saveUserData = (data) => {
 };
 
 
-app.use(express.static("./Frontend"))
+app.use(express.static("./frontend"))
 
 app.post("/api/signup", (req,res)=>{
     const {username, email, password} = req.body
@@ -195,7 +195,7 @@ app.post('/api/profile/getPFP', (req, res) => {
 
     //console.log(sanitizedEmail)
     // Construct the folder path
-    const folderPath = path.join(__dirname, 'Frontend', 'public', 'media', sanitizedEmail);
+    const folderPath = path.join(__dirname, 'frontend', 'public', 'media', sanitizedEmail);
     const profilePicPath = path.join(folderPath, 'profile.png');
     //console.log(profilePicPath)
 
@@ -232,11 +232,11 @@ app.listen(80, ()=>{
 
 })
 
-app.post('/api/chgPfp', upload.single('file'), (req, res) => {
-    console.log("changed PFP")
+// app.post('/api/chgPfp', upload.single('file'), (req, res) => {
+    // console.log("changed PFP")
     // The file will be saved to the 'uploads/' directory
-    res.json({ message: 'File uploaded successfully', file: req.file });
-  });
+    // res.json({ message: 'File uploaded successfully', file: req.file });
+  // });
 
 
 const rateLimitInterval = 2000; // 2 seconds 
@@ -247,9 +247,17 @@ app.get('/api/onlineUsers', (req,res)=>{
   for (user of wsConnections){
     //console.log("processing user: " +user.user.username)
     if (user.lastMessageTime + 180000 <= Date.now()){
-      returnJson.push({username:user.user.username, type:"idle"})
+      try{
+        returnJson.push({username:user.user.username, type:"idle"})
+        }catch (e){
+        console.error(e)
+        }
     }else{
-      returnJson.push({username:user.user.username, type:"online"})
+      try{
+        returnJson.push({username:user.user.username, type:"online"})
+        }catch (e){
+        console.error(e)
+        }
     }
   }
   res.json(returnJson)

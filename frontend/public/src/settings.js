@@ -65,3 +65,29 @@ function saveChanges(){
         console.error('Error uploading file:', error);
       });
 }
+async function changePasswordSubmit(){
+  let oldPassword = document.getElementById("oldPasswd").value
+  let newPassword = document.getElementById("newPasswd").value
+  let newPasswordRepeat = document.getElementById("newPasswdRe").value
+
+  if (newPassword !== newPasswordRepeat){
+    console.log("Passwords Dont match")
+    addAlert("danger", 'ERROR', 'Passwords do not match')
+    return
+  }
+  let serverData = await fetch("/api/chgPasswd", {
+    "method":"POST",
+    "headers":{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${localStorage.getItem("token")}`
+    },
+    "body":JSON.stringify({"newPasswd":newPassword, "oldPasswd":oldPassword})
+  })
+  let serverJson = await serverData.json()
+  if (serverData.status == 401){
+    addAlert("danger", 'ERROR', serverJson.error)
+    return
+  }
+
+
+}
