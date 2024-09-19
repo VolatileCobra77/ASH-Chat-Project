@@ -88,6 +88,24 @@ async function changePasswordSubmit(){
     addAlert("danger", 'ERROR', serverJson.error)
     return
   }
+  addAlert('info', "INFO", "Password Successfully Updated!")
 
+}
 
+function addAlert(type, heading, content){
+  let alertsDiv = document.getElementById("Alerts")
+  alertsDiv.innerHTML += `<div class="alert alert-${type} alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-left: 21px; margin-right: 21px; margin-bottom: 0px;">
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          <strong>${heading}</strong> ${content}
+      </div>`
+  setTimeout(closeAlert, 3000)
+}
+
+function closeAlert(name){
+  let alertElement = document.querySelector('.alert');
+  let bsAlert = new bootstrap.Alert(alertElement);
+  bsAlert.close();
+  setTimeout(()=>{
+      alertElement.remove()
+  }, 3000)
 }

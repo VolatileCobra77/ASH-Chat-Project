@@ -3,6 +3,7 @@
 - [ ] give each message an individual id
 - [ ] add the ability to "pin" messages (?)
 
+
 giving messages ids might be helpful for things such as deleting or replying to messages.
 
 pinning messages would make it so the message doesn't disapear upon reloading or clearing the screen
@@ -16,6 +17,7 @@ moderation?
 - [ ] !channel invite `(email:string)` `(channel:string)`
 - [ ] !channel create `(name:string)` `(type:string)`
 - [ ] show active channel in `<title>` or somewhere else
+- [ ] finish making channels actually work, add writing to all of the functions
 
 create will accept either private or public as a type and return an error if it gets not one of those. it will default to public if it gets none. 
 ## themes
@@ -24,4 +26,5 @@ create will accept either private or public as a type and return an error if it 
 
 perhaps we could give ids to custom themes. it can really be as simple as combining the hex codes of the custom theme. this might be useful for sharing themes?
 ## Log In/Profiles
-- [ ] Move Log in and Sign up buttons down on website
+- [x] Move Log in and Sign up buttons down on website
+- [ ] add change password api hook

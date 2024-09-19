@@ -11,8 +11,7 @@ const os = require('os')
 
 const app = express();
 
-let clients = []
-let blocklist = ['onclick=', '<iframe']
+
 
 dotenv.config();
 app.use(express.json());
@@ -25,7 +24,6 @@ function makeMediaFolders(email){
     fs.mkdirSync(path.join(pathToMake, 'videos'))
 
 }
-let wsConnections = []
 
 function readBlockList(){
   return JSON.parse(fs.readFileSync("blocklist.json", 'utf-8'));
@@ -51,11 +49,34 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage: storage });
 
-function broadcastToClients(message){
+function broadcastToClients(message, channelId){
     for (let connection of wsConnections) {
         connection.ws.send(message);  // Access the 'ws' property of each connection
     }
 }
+/* 
+
+    {
+        "id":"whaever",
+        "name":"whatever",
+        "accessList":["all"],
+        "messages":[
+            {
+                "author":"AuthorUSername",
+                "authorIP":"AuthorIP",
+                "content":"STUFF",
+                "color":"#FFFF",
+                "altColor":"#0000",
+                "timestamp":"000000"
+            }
+        ],
+        "wsConnections":[
+            "LIST OF WS CONNECTIONS FOR ACTIVE USERS"
+        ]
+    },
+
+
+*/
 
 function getUserByEmail(email) {
     const users = loadUserData()
@@ -65,6 +86,13 @@ function getUserByEmail(email) {
         }
     }
     return null; // return null if no match is found
+}
+
+function addUserToChannelList(user, channelId){
+  let channel = getChannel(channelId)
+  let index = wsConnections.indexOf(channel.wsConnections)
+        channel.wsConnection.user = user
+        channel.wsConnections[index] = wsConnection
 }
 
 function getUserFromWs(wsConnection) {
@@ -84,6 +112,53 @@ const checkPassword = (storedPassword, providedPassword) => bcrypt.compareSync(p
 const generateToken = (userId) => jwt.sign({ userId }, process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN });
 
 
+function readChannels(){
+  return JSON.parse(fs.readFileSync("channels.json"))
+}
+
+/*
+"author":"AuthorUSername",
+"authorIP":"AuthorIP",
+"content":"STUFF",
+"color":"#FFFF",
+"altColor":"#0000",
+"timestamp":"000000"
+*/
+
+function getChannel(channelId){
+  let channels = readChannels()
+  for( channel of channels){
+    if (channel.id === channelId){
+      return channel
+    }
+  }
+  return null
+}
+
+function saveChannels(){
+
+}
+
+function addChannel(channelName, accessList){
+  console.log("Hashing channelID")
+  let channelID = bcrypt.hashSync(channelName, bcrypt.genSaltSync(10))
+  console.log("channel id Hashed")
+  let channelToAdd = {
+    "id":channelID,
+    "name":channelName,
+    "accessList":accessList,
+    "messages":[
+
+    ],
+    "wsConnections":[]
+  }
+  let channels = readChannels()
+  channels.push(channelToAdd)
+  console.log("addig Channel")
+  fs.writeFileSync("channels.json", JSON.stringify(channels, null, 2), 'utf-8');
+}
+
+addChannel("test", ["all"])
 
 const USER_DATA_FILE = path.join(__dirname, 'users.json');
 
@@ -133,6 +208,13 @@ app.post("/api/signup", (req,res)=>{
     res.status(201).json({"token": generateToken(email), "username":username})
 
 })
+
+
+// Make change password API hook
+app.post("/api/chgPasswd", (req,res)=>{
+
+})
+
 
 app.post("/api/login", (req,res)=>{
     const {email, password} = req.body
@@ -266,8 +348,11 @@ app.get('/api/onlineUsers', (req,res)=>{
 
 server.on('connection', (ws, req) => {
   console.log('A new client connected!');
-
-  wsConnections.push({ ws, lastMessageTime: 0 }); // Initialize with a default timestamp of 0
+  let channels = readChannels()
+  for (channel of channels){
+    channel.wsConnections.push({ ws, lastMessageTime: 0 });
+  }
+  saveChannels(channels)
   
   // Respond to messages received from the client
   ws.on('message', (message) => {
@@ -290,7 +375,7 @@ server.on('connection', (ws, req) => {
       return;
     }
     
-    if (!messageJson.username && !messageJson.token && !messageJson.type && !messageJson.content) {
+    if (!messageJson.username && !messageJson.token && !messageJson.type && !messageJson.content &&!messageJson.channelId) {
       console.log("invalid connection received");
       ws.send(JSON.stringify({
         "ip": "SERVER",
@@ -377,10 +462,8 @@ server.on('connection', (ws, req) => {
           "timestamp": Date.now(),
           "type": "connection",
           "content": `${user.username} connected from ${ws._socket.remoteAddress}`
-        }));
-        let index = wsConnections.indexOf(wsConnection)
-        wsConnection.user = user
-        wsConnections[index] = wsConnection
+        }), messageJson.channelId);
+        addUserToChannelList(user, messageJson.channelId)
       } else if (messageJson.type === "message") {
         if(readBlockList().some(substring => messageJson.content.includes(substring))){
           ws.send(JSON.stringify({
@@ -402,7 +485,7 @@ server.on('connection', (ws, req) => {
           "timestamp": messageJson.date || Date.now(),
           "type": "message",
           "content": messageJson.content
-        }));
+        }), messageJson.channelId);
       } else {
         ws.send(JSON.stringify({
           "ip": "SERVER",

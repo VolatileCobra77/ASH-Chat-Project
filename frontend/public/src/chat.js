@@ -150,7 +150,8 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
             "token": localStorage.getItem("token"),
             "type": "message",
             "content": message,
-            "timestamp": Date.now()
+            "timestamp": Date.now(),
+            "channelId": 0
         }));
         document.getElementById("message").value = "";
     } else {
