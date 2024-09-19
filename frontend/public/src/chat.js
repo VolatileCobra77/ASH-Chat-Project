@@ -59,6 +59,9 @@ let sampleMsg = {"ip":"SERVER","username":"SERVER", "color":"#00000", "altColor"
 socket.onmessage = function(event) {
     console.log("Message from server: ", event.data);
     let message = JSON.parse(event.data)
+    if (message.uuid){
+        localStorage.setItem("uuid", uuid)
+    }
     console.log(message)
     const date = new Date(message.timestamp);  // Convert to a Date object
 
@@ -126,6 +129,9 @@ function reconnect(){
 function help(){
     addInfo('<h1>Command Descriptions</h1><ul class="list-group list-group-numbered"><li class="list-group-item">!help - shows this message</li><li class="list-group-item">!clear - clears the screen</li><li class="list-group-item ">!disconnect - disconnects from the session</li></ul><h1>Possible commands in the future</h1><ul class="list-group list-group-numbered">   <li class="list-group-item">!channels list - shows avalible channels</li>   <li class="list-group-item">!channels create [type] [name] - crates a channel, type is private or public, name is the name of the channel</li>   <li class="list-group-item">!channels invite [email] (channel) - invites specified user to channel if it is private, if a channel is specified after the user it invites them to that instead.</li></ul>') //long-ass line of code
 }
+function channels(){
+
+}
 
 const commandList = ["!clear", "!disconnect", "!help", "!reconnect", "!channels"]
 //? !channel join [channel], !channel list
@@ -146,6 +152,7 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
     console.log("Message:", message);
     if (socket) {
         socket.send(JSON.stringify({
+            "uuid":localStorage.getItem("uuid"),
             "username": localStorage.getItem("username"),
             "token": localStorage.getItem("token"),
             "type": "message",
@@ -225,7 +232,7 @@ function sortUsers(users) {
     });
 }
 async function getOnlineUsers(){
-    let serverRes = await fetch("/api/onlineUsers", {
+    let serverRes = await fetch(`/api/onlineUsers?channelId=0`, {
         "method":"GET"
     })
     let resJson = await serverRes.json()
@@ -252,5 +259,5 @@ async function getOnlineUsers(){
     }
 
 }
-getOnlineUsers()
-setInterval(getOnlineUsers, 500)
+//getOnlineUsers()
+//setInterval(getOnlineUsers, 500)

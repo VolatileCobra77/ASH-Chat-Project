@@ -1,3 +1,7 @@
+#!/usr/bin/env node
+
+const uuid = require("uuid")
+
 const express = require("express");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -29,6 +33,26 @@ function readBlockList(){
   return JSON.parse(fs.readFileSync("blocklist.json", 'utf-8'));
 }
 
+/**
+ * @typedef {Object} Message
+ * @property {string} author
+ * @property {string} authorIP
+ * @property {string} content
+ * @property {string} color
+ * @property {string} altColor
+ * @property {string} timestamp
+ */
+
+
+/**
+ * @typedef {Object} Channel
+ * @property {string} id
+ * @property {string} name
+ * @property {string[]} accessList
+ * @property {Message[]} messages
+ * @property {ws[]} wsConnections
+ */
+
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -50,7 +74,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 function broadcastToClients(message, channelId){
+    console.log("Channel ID " + channelId)
+    let wsConnections = getChannel(channelId).wsConnections
     for (let connection of wsConnections) {
+        console.log(connection.OPEN)
         connection.ws.send(message);  // Access the 'ws' property of each connection
     }
 }
@@ -95,12 +122,16 @@ function addUserToChannelList(user, channelId){
         channel.wsConnections[index] = wsConnection
 }
 
-function getUserFromWs(wsConnection) {
+function getUserFromWs(wsConnection, channelId) {
+    let wsConnections = getChannel(channelId).wsConnections
+    console.log(wsConnections)  
     for (let connection of wsConnections) {
-        if (connection.ws === wsConnection) {
+        if (connection.ws == wsConnection) {
+            console.log("found")
             return { user: connection.user, obj: connection }
         }
     }
+    console.log("not found")
     return null;
 }
 
@@ -125,17 +156,26 @@ function readChannels(){
 "timestamp":"000000"
 */
 
+/** 
+ * @returns {Channel}
+ * 
+*/
+
 function getChannel(channelId){
   let channels = readChannels()
   for( channel of channels){
     if (channel.id === channelId){
+      console.log(channel.name)
       return channel
     }
   }
+  console.log("Not found, id=" + channelId)
   return null
 }
 
-function saveChannels(){
+function saveChannels(channels){
+
+  fs.writeFileSync("channels.json", JSON.stringify(channels, null, 2), 'utf-8')
 
 }
 
@@ -155,10 +195,8 @@ function addChannel(channelName, accessList){
   let channels = readChannels()
   channels.push(channelToAdd)
   console.log("addig Channel")
-  fs.writeFileSync("channels.json", JSON.stringify(channels, null, 2), 'utf-8');
+  saveChannels(channels)
 }
-
-addChannel("test", ["all"])
 
 const USER_DATA_FILE = path.join(__dirname, 'users.json');
 
@@ -326,6 +364,11 @@ const server = new ws.Server({ port: 8080 });
 
 app.get('/api/onlineUsers', (req,res)=>{
   returnJson = []
+  if (req.query.channelId === undefined || req.query.channelId === null) {
+    res.json({ "ERROR": "No Channel ID, use ?channelId=CHANNELID to specify" });
+    return;
+  }
+  let wsConnections = getChannel(req.query.channelId).wsConnections
   for (user of wsConnections){
     //console.log("processing user: " +user.user.username)
     if (user.lastMessageTime + 180000 <= Date.now()){
@@ -344,13 +387,15 @@ app.get('/api/onlineUsers', (req,res)=>{
   }
   res.json(returnJson)
 })
-
+ws
 
 server.on('connection', (ws, req) => {
   console.log('A new client connected!');
+  ws.uuid = uuid.v4()
+  ws.send(JSON.stringify({"uuid":ws.uuid}));
   let channels = readChannels()
   for (channel of channels){
-    channel.wsConnections.push({ ws, lastMessageTime: 0 });
+    channel.wsConnections.push({ ws,user:{"username":"UNDEFINED"}, lastMessageTime: 0 });
   }
   saveChannels(channels)
   
@@ -388,10 +433,21 @@ server.on('connection', (ws, req) => {
       }));
       return;
     }
-
+    let wsConnection
     // Get the connection object to track rate limiting
-    const wsConnection = wsConnections.find(conn => conn.ws === ws);
-    if (!wsConnection) return;
+    for (channel of readChannels()) {
+      console.log("Channel wsConnections:", channel.wsConnections);
+      console.log("Passed in ws object:", ws);
+    
+      wsConnection = channel.wsConnections.find(conn => {
+        console.log("Comparing ws:", conn.ws._socket.remoteAddress, "with:", ws._socket.remoteAddress);
+        return conn.ws.uuid == messageJson.uuid;
+      });
+    
+      console.log("Found wsConnection:", wsConnection);
+    }
+
+    if (!wsConnection) { console.log("NO VALID WS CONNECTION"); return;}
 
     const now = Date.now();
 
@@ -454,6 +510,8 @@ server.on('connection', (ws, req) => {
       }
 
       if (messageJson.type === "connection") {
+        console.log("NEW CONNECTION")
+        addUserToChannelList(user, messageJson.channelId)
         broadcastToClients(JSON.stringify({
           "ip": "SERVER",
           "username": "SERVER",
@@ -463,7 +521,7 @@ server.on('connection', (ws, req) => {
           "type": "connection",
           "content": `${user.username} connected from ${ws._socket.remoteAddress}`
         }), messageJson.channelId);
-        addUserToChannelList(user, messageJson.channelId)
+        
       } else if (messageJson.type === "message") {
         if(readBlockList().some(substring => messageJson.content.includes(substring))){
           ws.send(JSON.stringify({
@@ -502,7 +560,7 @@ server.on('connection', (ws, req) => {
 
   ws.on("close", () => {
     try {
-      const { user, obj } = getUserFromWs(ws);
+      const { user, obj } = getUserFromWs(ws, "0");
       if (!user) {
         console.error("A user disconnected but was not found in the user list. restart server.");
         return;

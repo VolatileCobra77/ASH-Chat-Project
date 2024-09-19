@@ -27,4 +27,4 @@ create will accept either private or public as a type and return an error if it 
 perhaps we could give ids to custom themes. it can really be as simple as combining the hex codes of the custom theme. this might be useful for sharing themes?
 ## Log In/Profiles
 - [x] Move Log in and Sign up buttons down on website
-- [ ] add change password api hook
+- [ ] add change password api hook1
