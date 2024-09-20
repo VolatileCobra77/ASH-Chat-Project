@@ -63,6 +63,16 @@ body {
     background-color: #218838;
 }
 
+.groupBtn{
+    text-decoration: none; 
+    size:100%; 
+    
+}
+.groupBtn:hover{
+    size: 110%;
+}
+
+
 @keyframes fadeIn {
     from {
         opacity: 0;

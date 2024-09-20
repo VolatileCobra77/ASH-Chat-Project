@@ -17,7 +17,8 @@ moderation?
 - [ ] !channel invite `(email:string)` `(channel:string)`
 - [ ] !channel create `(name:string)` `(type:string)`
 - [ ] show active channel in `<title>` or somewhere else
-- [ ] finish making channels actually work, add writing to all of the functions. Solve wsConnection.ws.send() not being a function
+- [x] finish making channels actually work, add writing to all of the functions. Solve wsConnection.ws.send() not being a function
+- [ ] add error handling for channel id being null when authenticating
 
 create will accept either private or public as a type and return an error if it gets not one of those. it will default to public if it gets none. 
 ## themes

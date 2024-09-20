@@ -10,12 +10,15 @@ const multer = require('multer');
 const ws = require("ws");
 const fs = require('fs');
 const path = require('path');
-const os = require('os')
+const os = require('os');
+const { channel } = require("diagnostics_channel");
 
 
 const app = express();
 
+let adminList =["nathan.fransham@gmail.com", "ivykb@proton.me", "dbug.djh@gmail.com"]
 
+let wsConnections = []
 
 dotenv.config();
 app.use(express.json());
@@ -76,11 +79,11 @@ const upload = multer({ storage: storage });
 function broadcastToClients(message, channelId){
     console.log("Channel ID " + channelId)
     console.log()
-    let wsConnections = getChannel(channelId).wsConnections
     for (connection of wsConnections) {
-        console.log(connection.ws instanceof ws)
+      if (connection.cid == channelId){
         connection.ws.send(message);  // Access the 'ws' property of each connection
     }
+  }
 }
 /* 
 
@@ -120,20 +123,16 @@ function addUserToChannelList(ws, user,uuid, channelId){
   console.log("adding USer to channel " +channelId)
 
 
-  let channel = getChannel(channelId)
-  let channels = readChannels()
-  let channelIndex = channels.indexOf(channel)
   console.log(channel)
   let index;
-  for (wsConnection of channel.wsConnections){
+  for (wsConnection of wsConnections){
     if (wsConnection.ws.uuid == uuid){
       
-      index = channel.wsConnections.indexOf(wsConnection)
+      index = wsConnections.indexOf(wsConnection)
       wsConnection.user = user
       wsConnection.ws = ws
-      channel.wsConnections[index] = wsConnection
-      channels[channelIndex] = channel
-      saveChannels(channels)
+      wsConnection.cid = channelId
+      wsConnections[index] = wsConnection
       return;
     }
   }
@@ -141,10 +140,9 @@ function addUserToChannelList(ws, user,uuid, channelId){
 }
 
 function getUserFromWs(wsConnection, channelId) {
-    let wsConnections = getChannel(channelId).wsConnections
-    console.log(wsConnections)  
+
     for (let connection of wsConnections) {
-        if (connection.ws == wsConnection) {
+        if (connection.ws == wsConnection && connection.cid == channelId) {
             console.log("found")
             return { user: connection.user, obj: connection }
         }
@@ -181,7 +179,7 @@ function readChannels(){
 
 function getChannel(channelId){
   let channels = readChannels()
-  for( channel of channels){
+  for(let channel of channels){
     if (channel.id == channelId){
       console.log(channel.name)
       return channel
@@ -191,29 +189,46 @@ function getChannel(channelId){
   return null
 }
 
+function authenticateChannel(userEmail, channelId){
+  let channel=getChannel(channelId)
+  // if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.strip().toLowerCase())){
+  //   return true;
+  // }
+  console.log(channel)
+  for (let user of channel.accessList){
+    if (user == userEmail){
+      return true;
+    }
+
+    
+  }
+  return false;
+}
+
 function saveChannels(channels){
 
   fs.writeFileSync("channels.json", JSON.stringify(channels, null, 2), 'utf-8')
 
 }
 
-function addChannel(channelName, accessList){
+function addChannel(channelName, accessList, ownerId){
   console.log("Hashing channelID")
   let channelID = bcrypt.hashSync(channelName, bcrypt.genSaltSync(10))
   console.log("channel id Hashed")
   let channelToAdd = {
+    "owner":ownerId,
     "id":channelID,
     "name":channelName,
     "accessList":accessList,
     "messages":[
 
-    ],
-    "wsConnections":[]
+    ]
   }
   let channels = readChannels()
   channels.push(channelToAdd)
   console.log("addig Channel")
   saveChannels(channels)
+  return channelToAdd.id
 }
 
 const USER_DATA_FILE = path.join(__dirname, 'users.json');
@@ -231,7 +246,7 @@ const authenticateToken = (req, res, next) => {
     jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
         if (err) {next(err,null);return;}
         req.user = user;
-        next(err,user);
+        next(null,user);
     });
 };
 
@@ -270,7 +285,7 @@ app.post("/api/signup", (req,res)=>{
 app.post("/api/chgPasswd", (req,res)=>{
   jwt.verify(req.headers['authorization'], process.env.SECRET_KEY, (user, error)=>{
     if (error){
-      res.json(JSON.stringify({"error":error}))
+      res.json({"error":error})
       return;
     }
     
@@ -319,6 +334,43 @@ app.post("/api/login", (req,res)=>{
 
 app.post("/api/googleOauthReturn", (req,res)=>{
     
+})
+
+app.post("/api/channels/create", (req,res)=>{
+  authenticateToken(req,res,(err, user)=>{
+    if (err){
+      res.status(500).json({"error":err})
+      return;
+
+    }
+    if (!req.body.channelName && !req.body.accessList){
+      res.status(400).json({"error":"ChannelName and AccessList must be specified"})
+      return;
+    }
+    res.json({"cid":addChannel(req.body.channelName, req.body.accessList, user.userId)})
+
+  })  
+})
+app.get("/api/channels/list", (req,res)=>{
+  authenticateToken(req,res,(err,user)=>{
+    if (err){
+      res.status(500).json({"error":err})
+      return
+    }
+    let channels = readChannels()
+    console.log(channels)
+    let accessable = []
+    for (let channel of channels){
+      console.log(channel.accessList)
+      console.log(user.userId)
+      console.log(user.userId in adminList)
+      if (channel.accessList.find(email => email == user.userId || email =='all') || adminList.map(admin => admin.trim().toLowerCase()).includes(user.userId.trim().toLowerCase()) || channel.ownerId == user.userId){
+        accessable.push({"cid":channel.id, "name":channel.name})
+      }
+    }
+    res.json(accessable)
+
+  })
 })
 
 app.post('/api/profile/getPFP', (req, res) => {
@@ -423,11 +475,7 @@ server.on('connection', (ws, req) => {
   console.log('A new client connected!');
   ws.uuid = uuid.v4()
   ws.send(JSON.stringify({"uuid":ws.uuid}));
-  let channels = readChannels()
-  for (channel of channels){
-    channel.wsConnections.push({ "ws":{"uuid":ws.uuid},user:{"username":"UNDEFINED"}, lastMessageTime: 0 });
-  }
-  saveChannels(channels)
+    wsConnections.push({ "ws":{"uuid":ws.uuid},user:{"username":"UNDEFINED"}, lastMessageTime: 0 , cid:null});
   
   // Respond to messages received from the client
   ws.on('message', (message) => {
@@ -465,17 +513,13 @@ server.on('connection', (ws, req) => {
     }
     let wsConnection
     // Get the connection object to track rate limiting
-    for (channel of readChannels()) {
-      console.log("Channel wsConnections:", channel.wsConnections);
-      console.log("Passed in ws object:", ws);
     
-      wsConnection = channel.wsConnections.find(conn => {
+      wsConnection = wsConnections.find(conn => {
         console.log("Comparing ws:", conn.ws.uuid, "with:", messageJson.uuid);
         return conn.ws.uuid == messageJson.uuid;
       });
     
       console.log("Found wsConnection:", wsConnection);
-    }
 
     if (!wsConnection) { console.log("NO VALID WS CONNECTION"); return;}
 
@@ -541,6 +585,17 @@ server.on('connection', (ws, req) => {
 
       if (messageJson.type === "connection") {
         console.log("NEW CONNECTION")
+        if (!authenticateChannel(jwtUser.userId, messageJson.channelId)){
+          ws.send(JSON.stringify({
+            "ip": "SERVER",
+            "username": "SERVER",
+            "color": "#00000",
+            "altColor": "#fffff",
+            "timestamp": Date.now(),
+            "type": "error",
+            "content": `Unauthorized to Join Channel ${getChannel(messageJson.channelId).name}, Ask Owner for permission.`
+          }))
+        }
         addUserToChannelList(ws,user,messageJson.uuid, messageJson.channelId.toString())
         broadcastToClients(JSON.stringify({
           "ip": "SERVER",
@@ -549,7 +604,7 @@ server.on('connection', (ws, req) => {
           "altColor": "#fffff",
           "timestamp": Date.now(),
           "type": "connection",
-          "content": `${user.username} connected from ${ws._socket.remoteAddress}`
+          "content": `${user.username} connected from ${ws._socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
         }), messageJson.channelId);
         
       } else if (messageJson.type === "message") {

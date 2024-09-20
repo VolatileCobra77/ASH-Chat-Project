@@ -55,13 +55,17 @@ function convertDate(date) {
 
 
 // When a message is received from the server
+if (!localStorage.getItem('channelId')){
+    localStorage.setItem('channelId', '0')
+}
+
 
 socket.onmessage = function(event) {
     console.log("Message from server: ", event.data);
     let message = JSON.parse(event.data)
     if (message.uuid){
         localStorage.setItem("uuid", message.uuid)
-        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":0}));
+        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
         return
     }
     console.log(message)
@@ -160,7 +164,7 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
             "type": "message",
             "content": message,
             "timestamp": Date.now(),
-            "channelId": 0
+            "channelId": localStorage.getItem("channelId")
         }));
         document.getElementById("message").value = "";
     } else {
@@ -263,3 +267,22 @@ async function getOnlineUsers(){
 }
 //getOnlineUsers()
 //setInterval(getOnlineUsers, 500)
+
+async function getAllowedChannels(){
+    let returnData = await fetch("/api/channels/list", {
+        "method":"GET",
+        "headers":{
+            "Authorization":`Bearer ${localStorage.getItem('token')}`
+        }
+    })
+    let returnJson = await returnData.json()
+    let groupsContent = document.getElementById("groupsContent")
+    for(channel of returnJson){
+        groupsContent.innerHTML += `<a class="groupBtn" href="#" onclick="joinChannel('${channel.cid}')"><div class="alert alert-info" role="alert"><strong>${channel.name}</strong></div></a>`
+    }
+}
+
+function joinChannel(cid){
+    localStorage.setItem("channelId", cid)
+    window.location.href="/chat/"
+}
