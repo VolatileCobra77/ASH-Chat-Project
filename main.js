@@ -189,9 +189,9 @@ function getChannel(channelId){
 
 function authenticateChannel(userEmail, channelId){
   let channel=getChannel(channelId)
-  // if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.strip().toLowerCase())){
-  //   return true;
-  // }
+  if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.strip().toLowerCase())){
+    return true;
+  }
   for (let user of channel.accessList){
     if (user == userEmail || user == "all"){
       return true;
@@ -201,6 +201,9 @@ function authenticateChannel(userEmail, channelId){
   }
   return false;
 }
+
+
+
 
 function saveChannels(channels){
 
@@ -212,6 +215,7 @@ function addChannel(channelName, accessList, ownerId){
   console.log("Hashing channelID")
   let channelID = bcrypt.hashSync(channelName, bcrypt.genSaltSync(10))
   console.log("channel id Hashed")
+  accessList.push(ownerId)
   let channelToAdd = {
     "owner":ownerId,
     "id":channelID,
@@ -343,10 +347,36 @@ app.post("/api/channels/create", (req,res)=>{
       res.status(400).json({"error":"ChannelName and AccessList must be specified"})
       return;
     }
-    res.json({"cid":addChannel(req.body.channelName, req.body.accessList, user.userId)})
+    res.json({"message":"Successfully created channel","cid":addChannel(req.body.channelName, req.body.accessList, user.userId)})
 
   })  
 })
+
+app.post("/api/channels/changeAccess", (req,res)=>{
+    authenticateToken(req,res,(err,user)=>{
+      if (err){ res.status(500); return;}
+      let channel = getChannel(req.body.cid)
+      if (!user.userId == channel.owner){
+        res.status(401)
+      }
+      if (req.body.type == 'add'){
+        let channelIndex = readChannels().indexOf(channel)
+        let channels = readChannels()
+        channel.accessList += req.body.userEmail
+        channels[channelIndex] = channel
+        saveChannels(channels)
+        res.status(201)
+      }else if (req.body.type == 'rem'){
+        let channelIndex = readChannels().indexOf(channel)
+        let channels = readChannels()
+        channel.accessList.filter((email => email != req.body.userEmail))
+        channels[channelIndex] = channel
+        saveChannels(channels)
+      }
+
+    })
+})
+
 app.get("/api/channels/list", (req,res)=>{
   authenticateToken(req,res,(err,user)=>{
     if (err){
@@ -527,7 +557,7 @@ server.on('connection', (ws, req) => {
         "username": "SERVER",
         "color": "#00000",
         "altColor": "#fffff",
-        "timestamp": now,
+        "timestamp": Date.now(),
         "type": "error",
         "content": "You are sending messages too fast, please slow down."
       }));

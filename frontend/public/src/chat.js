@@ -59,19 +59,8 @@ if (!localStorage.getItem('channelId')){
     localStorage.setItem('channelId', '0')
 }
 
-
-socket.onmessage = function(event) {
-    console.log("Message from server: ", event.data);
-    let message = JSON.parse(event.data)
-    if (message.uuid){
-        localStorage.setItem("uuid", message.uuid)
-        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
-        return
-    }
-    console.log(message)
-    const date = new Date(message.timestamp);  // Convert to a Date object
-
-    // Get human-readable parts of the date
+function getHumanTime(time){
+    const date = new Date(time); 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');  // Months are 0-based
     const day = String(date.getDate()).padStart(2, '0');
@@ -83,7 +72,23 @@ socket.onmessage = function(event) {
 
     // Format as YYYY-MM-DD HH:MM:SS
     const humanReadable = `${convertDate(clockDate)} at ${convertTo12Hour(clockTime)}`;
+    return humanReadable
+}
 
+
+socket.onmessage = function(event) {
+    console.log("Message from server: ", event.data);
+    let message = JSON.parse(event.data)
+    if (message.uuid){
+        localStorage.setItem("uuid", message.uuid)
+        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
+        return
+    }
+    console.log(message)
+     // Convert to a Date object
+
+    // Get human-readable parts of the date
+    const humanReadable = getHumanTime(message.timestamp)
 console.log(humanReadable);
     if (message.username == "SERVER" && message.ip == "SERVER"){
         if(message.type == "error" || message.type =="internal-error"){
@@ -120,7 +125,7 @@ function clearScreen(){
     
     
 }
-function disconnect(){
+function disconnect(input){
     socket.close(1000, "Disconnect")
 }
 
@@ -128,15 +133,82 @@ function copyText(text){
     navigator.clipboard.writeText(text).then(() => {console.log('Text copied to clipboard');}).catch(err => {console.error('Failed to copy text: ', err);});
 }
 
-function reconnect(){
+function reconnect(input){
     window.location.href="/chat/"
 }
 
-function help(){
-    addInfo('<h1>Command Descriptions</h1><ul class="list-group list-group-numbered"><li class="list-group-item">!help - shows this message</li><li class="list-group-item">!clear - clears the screen</li><li class="list-group-item ">!disconnect - disconnects from the session</li></ul><h1>Possible commands in the future</h1><ul class="list-group list-group-numbered">   <li class="list-group-item">!channels list - shows avalible channels</li>   <li class="list-group-item">!channels create [type] [name] - crates a channel, type is private or public, name is the name of the channel</li>   <li class="list-group-item">!channels invite [email] (channel) - invites specified user to channel if it is private, if a channel is specified after the user it invites them to that instead.</li></ul>') //long-ass line of code
+function help(input){
+    addInfo('<h1>Command Descriptions</h1><ul class="list-group list-group-numbered"><li class="list-group-item">!help - shows this message</li><li class="list-group-item">!clear - clears the screen</li><li class="list-group-item ">!disconnect - disconnects from the session</li></ul><h1>Possible commands in the future</h1><ul class="list-group list-group-numbered">   <li class="list-group-item">!channels list - shows avalible channels</li>   <li class="list-group-item">!channels create [type] [name] - crates a channel, type is private or public, name is the name of the channel, names CANNOT have spaces, if they do the first word is used (ex:"Cool Channel" channel name becomes "Cool"</li>   <li class="list-group-item">!channels invite [email] (channel) - invites specified user to channel if it is private, if a channel is specified after the user it invites them to that instead.</li></ul>', getHumanTime(Date.now())) //long-ass line of code - ivy; Then Split it up yourself - VolatileCobra77;
 }
-function channels(){
-    
+function channels(input){
+    let inList = input.split(" ")
+    if (inList[1] =="list"){
+        addInfo('Getting Channels', getHumanTime(Date.now()))
+        getChannels()    
+        return
+    }
+    if (inList[1] =="connect" && inList[2]){
+        joinChannel(inList[2])
+        return
+    }else if (inList[1]=="connnect" && ! inList[2]){
+        addERROR('ERROR', 'No Channel Id Specified, Please specify the channel ID to connect to', getHumanTime(Date.now()))
+    }
+    if (inList[1]=="create" && inList[2]){
+        let type = inList[2]
+        let name =inList.slice(3).join(" ");
+        
+        createChannel(type, inList[3])
+    }else if (inList[1] == "create" & !inList[3]){
+        addERROR("ERROR", 'No Name Specified')
+    }
+}
+async function getChannels(){
+    let returnData = await fetch("/api/channels/list", {
+        "method":"GET",
+        "headers":{
+            "Authorization":`Bearer ${localStorage.getItem('token')}`
+        }
+    })
+    let returnJson = await returnData.json()
+    let infoData = "<div>" 
+    for(channel of returnJson){
+        infoData += `<a class="groupBtn" href="#" onclick="joinChannel('${channel.cid}')"><div class="alert alert-warning" role="alert"><strong>${channel.name}</strong> Channel ID: ${channel.cid}</div></a>`
+    }
+    infoData += "</div>"
+    addInfo(infoData, getHumanTime(Date.now()))
+}
+
+async function createChannel(type, name){
+    if (!type == 'public' || !type == 'private'){
+        type = 'public'
+    }
+
+    let accessList = []
+
+    if (type=='public'){
+        accessList = ['all']
+    }else if (type=='private'){
+        accessList = []
+    }
+    let conf = await fetch("/api/channels/create", {
+        "method":"POST",
+        "headers":{
+            "Content-Type":"application/json",
+        "Authorization" : `Bearer ${localStorage.getItem('token')}`},
+        "body":JSON.stringify({"channelName":name, "accessList":accessList})
+    })
+    let confJson = await conf.json()
+
+    if (conf.error){
+        addERROR('ERROR', conf.error, getHumanTime(Date.now()))
+        return
+    }
+
+    addInfo(conf.message +", Channel ID: " + conf.cid + "<button class='btn btn-primary' onclick='joinChannel(" + conf.cid + ")'> Join Channel </button>", getHumanTime(Date.now()))
+}
+
+async function inviteToChannel(user, channelId){
+
 }
 
 const commandList = ["!clear", "!disconnect", "!help", "!reconnect", "!channels"]
@@ -150,8 +222,9 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
     event.preventDefault(); // Prevents form from submitting and reloading the page
 
     let message = document.getElementById("message").value;
-    if (commandList.includes(message)){
-        commandValues[commandList.indexOf(message)]()
+    for (command of commandList){
+        if (!message.includes(command)) continue;
+        commandValues[commandList.indexOf(command)](message)
         document.getElementById("message").value="";
         return
     }

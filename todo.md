@@ -13,12 +13,13 @@ moderation?
 - [x] display the icon
 - [x] make it actually copy things
 ## channels
-- [ ] !channel join `(channel:string)`
-- [ ] !channel invite `(email:string)` `(channel:string)`
-- [ ] !channel create `(name:string)` `(type:string)`
+- [x] !channel join `(channel:string)`
+- [ ] !channel invite `(email:string)` `(channel:string)`, !channel remove `(email:string)` `(channel:string)`
+- [x] !channel create `(name:string)` `(type:string)`
 - [ ] show active channel in `<title>` or somewhere else
 - [x] finish making channels actually work, add writing to all of the functions. Solve wsConnection.ws.send() not being a function
-- [ ] add error handling for channel id being null when authenticating
+- [ ] add error handling for channel id being null when authenticating 
+
 
 create will accept either private or public as a type and return an error if it gets not one of those. it will default to public if it gets none. 
 ## themes
