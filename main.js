@@ -122,8 +122,6 @@ function getUserByEmail(email) {
 function addUserToChannelList(ws, user,uuid, channelId){
   console.log("adding USer to channel " +channelId)
 
-
-  console.log(channel)
   let index;
   for (wsConnection of wsConnections){
     if (wsConnection.ws.uuid == uuid){
@@ -139,10 +137,10 @@ function addUserToChannelList(ws, user,uuid, channelId){
   
 }
 
-function getUserFromWs(wsConnection, channelId) {
+function getUserFromWs(wsConnection) {
 
     for (let connection of wsConnections) {
-        if (connection.ws == wsConnection && connection.cid == channelId) {
+        if (connection.ws == wsConnection) {
             console.log("found")
             return { user: connection.user, obj: connection }
         }
@@ -194,9 +192,8 @@ function authenticateChannel(userEmail, channelId){
   // if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.strip().toLowerCase())){
   //   return true;
   // }
-  console.log(channel)
   for (let user of channel.accessList){
-    if (user == userEmail){
+    if (user == userEmail || user == "all"){
       return true;
     }
 
@@ -240,7 +237,6 @@ const loadUserData = () => {
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    console.log("authenticating token: " + token)
     if (token == null) return res.sendStatus(401);
 
     jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
@@ -358,12 +354,8 @@ app.get("/api/channels/list", (req,res)=>{
       return
     }
     let channels = readChannels()
-    console.log(channels)
     let accessable = []
     for (let channel of channels){
-      console.log(channel.accessList)
-      console.log(user.userId)
-      console.log(user.userId in adminList)
       if (channel.accessList.find(email => email == user.userId || email =='all') || adminList.map(admin => admin.trim().toLowerCase()).includes(user.userId.trim().toLowerCase()) || channel.ownerId == user.userId){
         accessable.push({"cid":channel.id, "name":channel.name})
       }
@@ -450,26 +442,29 @@ app.get('/api/onlineUsers', (req,res)=>{
     res.json({ "ERROR": "No Channel ID, use ?channelId=CHANNELID to specify" });
     return;
   }
-  let wsConnections = getChannel(req.query.channelId).wsConnections
-  for (user of wsConnections){
-    //console.log("processing user: " +user.user.username)
-    if (user.lastMessageTime + 180000 <= Date.now()){
-      try{
-        returnJson.push({username:user.user.username, type:"idle"})
-        }catch (e){
-        console.error(e)
-        }
-    }else{
-      try{
-        returnJson.push({username:user.user.username, type:"online"})
-        }catch (e){
-        console.error(e)
-        }
+  for (let user of wsConnections){
+    if(!user.cid){
+      return;
     }
+    if (user.cid == req.query.channelId.toString()){
+      if (user.lastMessageTime + 180000 <= Date.now()){
+        try{
+          returnJson.push({username:user.user.username, type:"idle"})
+          }catch (e){
+          console.error(e)
+          }
+      }else{
+        try{
+          returnJson.push({username:user.user.username, type:"online"})
+          }catch (e){
+          console.error(e)
+          }
+      }
+    }
+    
   }
   res.json(returnJson)
 })
-ws
 
 server.on('connection', (ws, req) => {
   console.log('A new client connected!');
@@ -593,8 +588,9 @@ server.on('connection', (ws, req) => {
             "altColor": "#fffff",
             "timestamp": Date.now(),
             "type": "error",
-            "content": `Unauthorized to Join Channel ${getChannel(messageJson.channelId).name}, Ask Owner for permission.`
+            "content": `Unauthorized to Join Channel ${getChannel(messageJson.channelId).name}, Ask Owner for permission. <button class="btn btn-primary" onclick="joinChannel('0')"> Go Back </button>`
           }))
+          return;
         }
         addUserToChannelList(ws,user,messageJson.uuid, messageJson.channelId.toString())
         broadcastToClients(JSON.stringify({
@@ -645,12 +641,15 @@ server.on('connection', (ws, req) => {
 
   ws.on("close", () => {
     try {
-      const { user, obj } = getUserFromWs(ws, "0");
+      const { user, obj } = getUserFromWs(ws);
       if (!user) {
         console.error("A user disconnected but was not found in the user list. restart server.");
         return;
       }
-      wsConnections = wsConnections.filter(item => item.ws !== ws);
+      let oldWsConnections = wsConnections
+      wsConnections = wsConnections.filter(item => item !== obj);
+      console.log(oldWsConnections == wsConnections)
+      console.log("removed User")
       broadcastToClients(JSON.stringify({
         "ip": "SERVER",
         "username": "SERVER",
@@ -659,7 +658,7 @@ server.on('connection', (ws, req) => {
         "timestamp": Date.now(),
         "type": "disconnect",
         "content": `${user.username} disconnected`
-      }));
+      }), obj.cid);
     } catch (err) {
       console.error(err);
     }

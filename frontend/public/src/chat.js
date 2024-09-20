@@ -136,7 +136,7 @@ function help(){
     addInfo('<h1>Command Descriptions</h1><ul class="list-group list-group-numbered"><li class="list-group-item">!help - shows this message</li><li class="list-group-item">!clear - clears the screen</li><li class="list-group-item ">!disconnect - disconnects from the session</li></ul><h1>Possible commands in the future</h1><ul class="list-group list-group-numbered">   <li class="list-group-item">!channels list - shows avalible channels</li>   <li class="list-group-item">!channels create [type] [name] - crates a channel, type is private or public, name is the name of the channel</li>   <li class="list-group-item">!channels invite [email] (channel) - invites specified user to channel if it is private, if a channel is specified after the user it invites them to that instead.</li></ul>') //long-ass line of code
 }
 function channels(){
-
+    
 }
 
 const commandList = ["!clear", "!disconnect", "!help", "!reconnect", "!channels"]
@@ -238,7 +238,7 @@ function sortUsers(users) {
     });
 }
 async function getOnlineUsers(){
-    let serverRes = await fetch(`/api/onlineUsers?channelId=0`, {
+    let serverRes = await fetch(`/api/onlineUsers?channelId=${localStorage.getItem("channelId")}`, {
         "method":"GET"
     })
     let resJson = await serverRes.json()
@@ -251,6 +251,7 @@ async function getOnlineUsers(){
     }
     
     outputList = sortUsers(outputList)
+    console.log(outputList)
     let onlineContent = document.getElementById("onlineContent")
     onlineContent.innerHTML = ""
     for (user of outputList){
@@ -265,8 +266,8 @@ async function getOnlineUsers(){
     }
 
 }
-//getOnlineUsers()
-//setInterval(getOnlineUsers, 500)
+getOnlineUsers()
+setInterval(getOnlineUsers, 500)
 
 async function getAllowedChannels(){
     let returnData = await fetch("/api/channels/list", {
@@ -277,6 +278,7 @@ async function getAllowedChannels(){
     })
     let returnJson = await returnData.json()
     let groupsContent = document.getElementById("groupsContent")
+    groupsContent.innerHTML = ''
     for(channel of returnJson){
         groupsContent.innerHTML += `<a class="groupBtn" href="#" onclick="joinChannel('${channel.cid}')"><div class="alert alert-info" role="alert"><strong>${channel.name}</strong></div></a>`
     }
@@ -286,3 +288,4 @@ function joinChannel(cid){
     localStorage.setItem("channelId", cid)
     window.location.href="/chat/"
 }
+setInterval(getAllowedChannels, 500)
