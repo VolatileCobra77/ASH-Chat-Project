@@ -24,7 +24,7 @@ let socket = new WebSocket(wsUrl)
 socket.onopen = function(event) {
     console.log("WebSocket connection opened");
     // Optionally, send a message to the server once connected
-    socket.send(JSON.stringify({"username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now()}));
+    
 };
 function convertTo12Hour(time24) {
     let [hours, minutes, seconds] = time24.split(':').map(Number);
@@ -55,12 +55,14 @@ function convertDate(date) {
 
 
 // When a message is received from the server
-let sampleMsg = {"ip":"SERVER","username":"SERVER", "color":"#00000", "altColor":"#fffff", "timestamp":Date.now(), "type":"error", "content":"Invald Token, please log in again"}
+
 socket.onmessage = function(event) {
     console.log("Message from server: ", event.data);
     let message = JSON.parse(event.data)
     if (message.uuid){
-        localStorage.setItem("uuid", uuid)
+        localStorage.setItem("uuid", message.uuid)
+        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":0}));
+        return
     }
     console.log(message)
     const date = new Date(message.timestamp);  // Convert to a Date object

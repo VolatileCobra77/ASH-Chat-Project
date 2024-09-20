@@ -75,9 +75,10 @@ const upload = multer({ storage: storage });
 
 function broadcastToClients(message, channelId){
     console.log("Channel ID " + channelId)
+    console.log()
     let wsConnections = getChannel(channelId).wsConnections
-    for (let connection of wsConnections) {
-        console.log(connection.OPEN)
+    for (connection of wsConnections) {
+        console.log(connection.ws instanceof ws)
         connection.ws.send(message);  // Access the 'ws' property of each connection
     }
 }
@@ -115,11 +116,28 @@ function getUserByEmail(email) {
     return null; // return null if no match is found
 }
 
-function addUserToChannelList(user, channelId){
+function addUserToChannelList(ws, user,uuid, channelId){
+  console.log("adding USer to channel " +channelId)
+
+
   let channel = getChannel(channelId)
-  let index = wsConnections.indexOf(channel.wsConnections)
-        channel.wsConnection.user = user
-        channel.wsConnections[index] = wsConnection
+  let channels = readChannels()
+  let channelIndex = channels.indexOf(channel)
+  console.log(channel)
+  let index;
+  for (wsConnection of channel.wsConnections){
+    if (wsConnection.ws.uuid == uuid){
+      
+      index = channel.wsConnections.indexOf(wsConnection)
+      wsConnection.user = user
+      wsConnection.ws = ws
+      channel.wsConnections[index] = wsConnection
+      channels[channelIndex] = channel
+      saveChannels(channels)
+      return;
+    }
+  }
+  
 }
 
 function getUserFromWs(wsConnection, channelId) {
@@ -164,7 +182,7 @@ function readChannels(){
 function getChannel(channelId){
   let channels = readChannels()
   for( channel of channels){
-    if (channel.id === channelId){
+    if (channel.id == channelId){
       console.log(channel.name)
       return channel
     }
@@ -250,6 +268,18 @@ app.post("/api/signup", (req,res)=>{
 
 // Make change password API hook
 app.post("/api/chgPasswd", (req,res)=>{
+  jwt.verify(req.headers['authorization'], process.env.SECRET_KEY, (user, error)=>{
+    if (error){
+      res.json(JSON.stringify({"error":error}))
+      return;
+    }
+    
+    let localUser = getUserByEmail(user.userId)
+    if (!checkPassword(localUser.passHash, req.body.password)){
+      
+    }
+
+  })
 
 })
 
@@ -395,7 +425,7 @@ server.on('connection', (ws, req) => {
   ws.send(JSON.stringify({"uuid":ws.uuid}));
   let channels = readChannels()
   for (channel of channels){
-    channel.wsConnections.push({ ws,user:{"username":"UNDEFINED"}, lastMessageTime: 0 });
+    channel.wsConnections.push({ "ws":{"uuid":ws.uuid},user:{"username":"UNDEFINED"}, lastMessageTime: 0 });
   }
   saveChannels(channels)
   
@@ -440,7 +470,7 @@ server.on('connection', (ws, req) => {
       console.log("Passed in ws object:", ws);
     
       wsConnection = channel.wsConnections.find(conn => {
-        console.log("Comparing ws:", conn.ws._socket.remoteAddress, "with:", ws._socket.remoteAddress);
+        console.log("Comparing ws:", conn.ws.uuid, "with:", messageJson.uuid);
         return conn.ws.uuid == messageJson.uuid;
       });
     
@@ -511,7 +541,7 @@ server.on('connection', (ws, req) => {
 
       if (messageJson.type === "connection") {
         console.log("NEW CONNECTION")
-        addUserToChannelList(user, messageJson.channelId)
+        addUserToChannelList(ws,user,messageJson.uuid, messageJson.channelId.toString())
         broadcastToClients(JSON.stringify({
           "ip": "SERVER",
           "username": "SERVER",

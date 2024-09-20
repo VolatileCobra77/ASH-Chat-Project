@@ -101,17 +101,7 @@
 
                 </div>
                 <div class="col-9" id="content">
-                    <div id="Alerts"></div>
-                    <form id="changePassword">
-                        <label for="oldPasswd" class="form-label">Old Password</label>
-                        <input type="password" id="oldPasswd" class="form-control" placeholder="Old Password">
-                        <label for="newPasswd" class="form-label">New password</label>
-                        <input type="password" id="newPasswd" class="form-control" placeholder="New Password">
-                        <label for="newPasswdRe" class="form-label">Repeat New Password</label>
-                        <input type="password" id="newPasswdRe" class="form-control" placeholder="Repeat New Password">
-                        <button type="submit" class="btn btn-primary">Change Password</button>
-                        
-                    </form>
+                    
                 </div>
             </div>
         </div>
@@ -182,10 +172,22 @@
             $('#chgPasswd').click(function(event) {
                 event.preventDefault();
                 $('#content').html(`
-                    <h2>Change Account Details</h2>
-                    <p>Update your email, password, and other account information here.</p>
+                    <div id="Alerts"></div>
+                    <form id="changePassword">
+                        <label for="oldPasswd" class="form-label">Old Password</label>
+                        <input type="password" id="oldPasswd" class="form-control" placeholder="Old Password">
+                        <label for="newPasswd" class="form-label">New password</label>
+                        <input type="password" id="newPasswd" class="form-control" placeholder="New Password">
+                        <label for="newPasswdRe" class="form-label">Repeat New Password</label>
+                        <input type="password" id="newPasswdRe" class="form-control" placeholder="Repeat New Password">
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        
+                    </form>
                 `);
-                $("changePassword").addEventListener("submit", changePasswordSubmit)
+                $("#changePassword")[0].addEventListener("submit", (event)=>{
+                    event.preventDefault()
+                    changePasswordSubmit()
+                })
             });
 
             // Change content for "Delete Account"
