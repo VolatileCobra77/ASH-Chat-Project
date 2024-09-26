@@ -24,5 +24,23 @@
       "someone@anEmail.Domain"
     ],
     "messages": []
+  },
+  {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$LDlpmbbkEfUWm91Gn1UGp.7gEwWz1Gntp9WvvCT2nk/l4sWiSTDVu",
+    "name": "Cool Channel",
+    "accessList": [
+      "nathan.fransham@gmail.com"
+    ],
+    "messages": []
+  },
+  {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$F7iAfASamHu41nOcmvh.M.QLP94rnClYQ5EA94EvRnPZmDNjjLUXG",
+    "name": "Channel THing",
+    "accessList": [
+      "nathan.fransham@gmail.com"
+    ],
+    "messages": []
   }
 ]

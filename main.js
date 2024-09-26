@@ -189,7 +189,7 @@ function getChannel(channelId){
 
 function authenticateChannel(userEmail, channelId){
   let channel=getChannel(channelId)
-  if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.strip().toLowerCase())){
+  if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.trim().toLowerCase())){
     return true;
   }
   for (let user of channel.accessList){

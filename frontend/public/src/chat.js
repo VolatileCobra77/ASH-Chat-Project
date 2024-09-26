@@ -157,9 +157,12 @@ function channels(input){
         let type = inList[2]
         let name =inList.slice(3).join(" ");
         
-        createChannel(type, inList[3])
+        createChannel(type, name)
     }else if (inList[1] == "create" & !inList[3]){
-        addERROR("ERROR", 'No Name Specified')
+        addERROR("ERROR", 'No Name Specified', getHumanTime(Date.now()))
+    }
+    else{
+        addERROR('ERROR', "Invalid input", getHumanTime(Date.now()))
     }
 }
 async function getChannels(){
@@ -199,12 +202,12 @@ async function createChannel(type, name){
     })
     let confJson = await conf.json()
 
-    if (conf.error){
-        addERROR('ERROR', conf.error, getHumanTime(Date.now()))
+    if (confJson.error){
+        addERROR('ERROR', confJson.error, getHumanTime(Date.now()))
         return
     }
 
-    addInfo(conf.message +", Channel ID: " + conf.cid + "<button class='btn btn-primary' onclick='joinChannel(" + conf.cid + ")'> Join Channel </button>", getHumanTime(Date.now()))
+    addInfo(confJson.message +", Channel ID: " + confJson.cid + "<button class='btn btn-primary' onclick='joinChannel(" + confJson.cid + ")'> Join Channel </button>", getHumanTime(Date.now()))
 }
 
 async function inviteToChannel(user, channelId){
