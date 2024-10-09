@@ -16,7 +16,7 @@ function addMsg(Sender, senderIp, senderColor, message, time){
 
 const host = window.location.hostname;  // Get the current hostname (e.g., localhost or 168.99.44.34)
 
-wsUrl = `${protocol}://${host}:8080`;
+wsUrl = `${protocol}://${host}/ws`;
 
 let socket = new WebSocket(wsUrl)
 

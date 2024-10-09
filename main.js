@@ -474,7 +474,7 @@ app.get('/api/onlineUsers', (req,res)=>{
   }
   for (let user of wsConnections){
     if(!user.cid){
-      return;
+      return res.json([{"username":"NO ONLINE USERS", "type":"online"}]);
     }
     if (user.cid == req.query.channelId.toString()){
       if (user.lastMessageTime + 180000 <= Date.now()){
