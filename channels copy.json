@@ -1,0 +1,55 @@
+[
+  {
+    "id": "0",
+    "name": "Global Chat",
+    "accessList": [
+      "all"
+    ],
+    "messages": [
+      {
+        "author": "AuthorUSername",
+        "authorIP": "AuthorIP",
+        "content": "STUFF",
+        "color": "#FFFF",
+        "altColor": "#0000",
+        "timestamp": "000000"
+      }
+    ]
+  },
+  {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$1S2GUei7i/5Jc850AKbIP.pkdHlv9GZFh6QE1IQ8f70/P07zHVFgi",
+    "name": "VolatileCobra77's channel",
+    "accessList": [
+      "someone@anEmail.Domain"
+    ],
+    "messages": []
+  },
+  {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$LDlpmbbkEfUWm91Gn1UGp.7gEwWz1Gntp9WvvCT2nk/l4sWiSTDVu",
+    "name": "Cool Channel",
+    "accessList": [
+      "nathan.fransham@gmail.com"
+    ],
+    "messages": []
+  },
+  {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$F7iAfASamHu41nOcmvh.M.QLP94rnClYQ5EA94EvRnPZmDNjjLUXG",
+    "name": "Channel THing",
+    "accessList": [
+      "nathan.fransham@gmail.com"
+    ],
+    "messages": []
+  },
+  {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$Oidsp6zRnOgWKaQXxcLthu3So3IuAs8USCB2eBkxIaUdWqB.4AvZO",
+    "name": "all",
+    "accessList": [
+      "nathan.fransham@gmail.com"
+    ],
+    "messages": []
+  }
+]

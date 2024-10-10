@@ -13,6 +13,78 @@ const path = require('path');
 const os = require('os');
 const { channel } = require("diagnostics_channel");
 
+const readline = require('readline');
+
+// Create interface to listen for input
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: '> ' // Prompt sign for user input
+});
+
+// A function to simulate an async task (like a command handler)
+async function handleCommand(command) {
+    return new Promise((resolve, reject) => {
+        resolve(command) // Simulate delay
+    });
+}
+
+// Start listening for input
+rl.prompt();
+
+function processMsgSend(args){
+    if (!args[0]){
+      console.log("no channel id specified!")
+      return
+    }
+    if (!args[1]){
+      console.log("no message specified!")
+    }
+    const cid = args[0]
+    const msg = args.slice(1).join(" ")
+    console.log(`Sending message ${msg} to channel ${getChannel(cid).name}`)
+    broadcastToClients(JSON.stringify({
+      "ip": "SERVER",
+      "username": "SERVER",
+      "color": "#00000",
+      "altColor": "#fffff",
+      "timestamp": Date.now(),
+      "type": "Server message",
+      "content": msg
+    }), cid)
+
+}
+
+rl.on('line', async (input) => {
+    const trimmedInput = input.trim();
+
+    // Execute the command asynchronously
+    try {
+        //console.log(result);
+        
+        // Exit the process if 'exit' command is given
+
+        let commands = trimmedInput.split(" ")
+
+        const command = commands[0]
+
+        const args = commands.slice(1)
+
+        switch(command){
+          case 'exit' : rl.exit();
+          case 'sendmsg' : processMsgSend(args);
+        }
+    } catch (err) {
+        console.error('Error executing command:', err);
+    }
+
+    // Keep prompting for more input
+    rl.prompt();
+}).on('close', () => {
+    console.log('Process terminated');
+    process.exit(0);
+});
+
 
 const app = express();
 
@@ -85,29 +157,7 @@ function broadcastToClients(message, channelId){
     }
   }
 }
-/* 
 
-    {
-        "id":"whaever",
-        "name":"whatever",
-        "accessList":["all"],
-        "messages":[
-            {
-                "author":"AuthorUSername",
-                "authorIP":"AuthorIP",
-                "content":"STUFF",
-                "color":"#FFFF",
-                "altColor":"#0000",
-                "timestamp":"000000"
-            }
-        ],
-        "wsConnections":[
-            "LIST OF WS CONNECTIONS FOR ACTIVE USERS"
-        ]
-    },
-
-
-*/
 
 function getUserByEmail(email) {
     const users = loadUserData()
@@ -187,6 +237,16 @@ function getChannel(channelId){
   return null
 }
 
+function getChannelIdFromName(name){
+  let channels = readChannels();
+  channels.forEach(channel => {
+    if (channel.name == name){
+      return channel.cid;
+    }
+  });
+  return null
+}
+
 function authenticateChannel(userEmail, channelId){
   let channel=getChannel(channelId)
   if (adminList.map(admin => admin.trim().toLowerCase()).includes(userEmail.trim().toLowerCase())){
@@ -258,7 +318,7 @@ const saveUserData = (data) => {
 app.use(express.static("./frontend"))
 
 app.post("/api/signup", (req,res)=>{
-    const {username, email, password} = req.body
+    let {username, email, password} = req.body
     let users = loadUserData()
     if (users.some(user=> user.email === email)){
         res.status(400).json({"error":"User Already Exists"})
@@ -266,6 +326,7 @@ app.post("/api/signup", (req,res)=>{
     }
 
     const hashedPass = hashPassword(password)
+    email = email.tolowerCase()
     users.push({
         username,
         email,
@@ -302,7 +363,7 @@ app.post("/api/chgPasswd", (req,res)=>{
 app.post("/api/login", (req,res)=>{
     const {email, password} = req.body
     let users = loadUserData()
-    let user = users.find(user => user.email === email);
+    let user = users.find(user => user.email.toLowerCase() === email);
     console.log("login Request for " + email)
 
     if (!user){
@@ -351,6 +412,27 @@ app.post("/api/channels/create", (req,res)=>{
 
   })  
 })
+app.post("/api/channels/delete", (req,res)=>{
+  authenticateToken(req,res,(err,user)=>{
+    let channel = getChannel(getChannelIdFromName(req.channelName))
+    if (!channel){
+      return res.status(400).json({"error":"invalid channel name"})
+    }
+    if (!user || user.userId != channel.owner){
+      return res.status(401).json("Unauthorized")
+    }
+
+    let channels = readChannels();
+    channels.forEach(chan=>{
+      if (chan == channel){
+        channels[chan] = null
+        return;
+      }
+    })
+    saveChannels(channels)
+    return res.status(201);
+  })
+})
 
 app.post("/api/channels/changeAccess", (req,res)=>{
     authenticateToken(req,res,(err,user)=>{
@@ -376,6 +458,7 @@ app.post("/api/channels/changeAccess", (req,res)=>{
 
     })
 })
+
 
 app.get("/api/channels/list", (req,res)=>{
   authenticateToken(req,res,(err,user)=>{
@@ -473,7 +556,7 @@ app.get('/api/onlineUsers', (req,res)=>{
     return;
   }
   for (let user of wsConnections){
-    if(!user.cid){
+    if(!user){
       return res.json([{"username":"NO ONLINE USERS", "type":"online"}]);
     }
     if (user.cid == req.query.channelId.toString()){

@@ -17,29 +17,32 @@
     ]
   },
   {
-    "owner": "nathan.fransham@gmail.com",
-    "id": "$2a$10$1S2GUei7i/5Jc850AKbIP.pkdHlv9GZFh6QE1IQ8f70/P07zHVFgi",
-    "name": "VolatileCobra77's channel",
+    "owner": "ivykb@proton.me",
+    "id": "$2a$10$hH3jefAHn7NsDyZUqMhFk.laZC65TgMtug4LxD8q2B9ypRq4NWzue",
+    "name": "",
     "accessList": [
-      "someone@anEmail.Domain"
+      "all",
+      "ivykb@proton.me"
     ],
     "messages": []
   },
   {
-    "owner": "nathan.fransham@gmail.com",
-    "id": "$2a$10$LDlpmbbkEfUWm91Gn1UGp.7gEwWz1Gntp9WvvCT2nk/l4sWiSTDVu",
-    "name": "Cool Channel",
+    "owner": "ivykb@proton.me",
+    "id": "$2a$10$cpIP7E.TcfsjhsalasvZO.JxUjLYlUX018H58bLLrpBMzPMgMe9hG",
+    "name": "<button onclick='for (let i = 0; i < i + 1; i++) { console.log(i/i/i/i/i/i/i/i*i*i*i*i/621); }'>meow :3</button>",
     "accessList": [
-      "nathan.fransham@gmail.com"
+      "all",
+      "ivykb@proton.me"
     ],
     "messages": []
   },
   {
-    "owner": "nathan.fransham@gmail.com",
-    "id": "$2a$10$F7iAfASamHu41nOcmvh.M.QLP94rnClYQ5EA94EvRnPZmDNjjLUXG",
-    "name": "Channel THing",
+    "owner": "ivykb@proton.me",
+    "id": "$2a$10$uAu9Do/CwRuUWhGzOSbGwOQxv6l4NRnEhBA6gJfVY165IXU73sKbO",
+    "name": "mrrow",
     "accessList": [
-      "nathan.fransham@gmail.com"
+      "all",
+      "ivykb@proton.me"
     ],
     "messages": []
   }

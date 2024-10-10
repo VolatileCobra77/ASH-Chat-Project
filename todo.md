@@ -30,3 +30,8 @@ perhaps we could give ids to custom themes. it can really be as simple as combin
 ## Log In/Profiles
 - [x] Move Log in and Sign up buttons down on website
 - [ ] add change password api hook1
+
+## Domain
+- [x] Migrate to my domain
+- [ ] Put on its own subdomain
+- [ ] Make websocket connections work (See [notes.md](notes.md))

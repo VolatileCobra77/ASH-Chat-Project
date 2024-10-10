@@ -93,7 +93,11 @@ console.log(humanReadable);
     if (message.username == "SERVER" && message.ip == "SERVER"){
         if(message.type == "error" || message.type =="internal-error"){
             addERROR(message.type, message.content, humanReadable)
-        }else{
+        }else if(message.type == "Server Message"){
+
+
+        }
+        else{
             addInfo(message.content, humanReadable)
         }
     }else{
@@ -160,6 +164,12 @@ function channels(input){
         createChannel(type, name)
     }else if (inList[1] == "create" & !inList[3]){
         addERROR("ERROR", 'No Name Specified', getHumanTime(Date.now()))
+    }else if (inList[1] == "delete"){
+        if (!inList[2]){
+            addERROR("No Name Specified", getHumanTime(Date.now()))
+            return;
+        }
+        requestRemoveChannel(inList[2])
     }
     else{
         addERROR('ERROR', "Invalid input", getHumanTime(Date.now()))
@@ -181,6 +191,29 @@ async function getChannels(){
     addInfo(infoData, getHumanTime(Date.now()))
 }
 
+async function requestRemoveChannel(name){
+    const returnData = fetch("/api/channels/delete", {
+        "method":"POST",
+        "headers":{
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${localStorage.getItem("token")}`
+        },
+        "body":JSON.stringify({"channelName":name})
+    })
+    if (returnData.status != 201){
+        let returnDataJson = await returnData.json()
+        addERROR("ERROR", returnDataJson.error, getHumanTime(Date.now()))
+        return;
+    }
+    addInfo(`Channel ${name} deleted sucessfully`)
+    if(localStorage.getItem("channelName" == name)){
+        localStorage.setItem("channelId", 0)
+        window.location.href = "/chat"
+        return
+    }
+    
+}
+
 async function createChannel(type, name){
     if (!type == 'public' || !type == 'private'){
         type = 'public'
@@ -197,7 +230,8 @@ async function createChannel(type, name){
         "method":"POST",
         "headers":{
             "Content-Type":"application/json",
-        "Authorization" : `Bearer ${localStorage.getItem('token')}`},
+            "Authorization" : `Bearer ${localStorage.getItem('token')}`
+        },
         "body":JSON.stringify({"channelName":name, "accessList":accessList})
     })
     let confJson = await conf.json()
