@@ -9,6 +9,8 @@
     "multer": "^1.4.5-lts.1",
     "os": "^0.1.2",
     "uuid": "^10.0.0",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "keycloak-connect": "latest",
+    "express-session": "latest"
   }
 }
