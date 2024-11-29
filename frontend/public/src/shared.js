@@ -1,35 +1,40 @@
 let loginBtn = document.getElementById("loginBtn")
 let accountBtn = document.getElementById("accountBtn")
-async function authenticateToken(token) {
-    let returnData = await fetch("/api/tokenTester", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        }
-    });
-    
-    // Check the status code directly from returnData
-    let jsonData = await returnData.json()
-    console.log(jsonData)
-    return jsonData.authenticated
-}
 
-async function checkLoggedIn(){
-    let token = localStorage.getItem("token")
-    let authorized = await authenticateToken(token)
-    console.log({"authorized":authorized, "token":"token"})
-    if(token&&authorized){
-        console.log("logged in")
-        loginBtn.classList.add("visually-hidden")
-        accountBtn.classList.remove("visually-hidden")
-    }else{
-        localStorage.removeItem("token")
-        console.log("not logged in")
-        loginBtn.classList.remove("visually-hidden")
-        accountBtn.classList.add("visually-hidden")
+async function initKeycloak() {
+    try {
+        await keycloak.init({
+            onLoad: 'check-sso',
+            silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+            pkceMethod: 'S256'
+        });
+        
+        if (keycloak.authenticated) {
+            loginBtn.classList.add("visually-hidden");
+            accountBtn.classList.remove("visually-hidden");
+            localStorage.setItem("token", keycloak.token);
+            localStorage.setItem("username", keycloak.tokenParsed.preferred_username);
+        } else {
+            loginBtn.classList.remove("visually-hidden");
+            accountBtn.classList.add("visually-hidden");
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+        }
+    } catch (err) {
+        console.error('Failed to initialize Keycloak', err);
     }
 }
+
+function login() {
+    keycloak.login();
+}
+
+function logout() {
+    keycloak.logout();
+}
+
+// Initialize Keycloak when the page loads
+initKeycloak();
 
 function timeAgo(unixTime) {
     const now = Date.now();
@@ -63,14 +68,6 @@ function timeAgo(unixTime) {
     return `${diffInYears} years ago`;
 }
 
-
-checkLoggedIn()
-function logout(){
-    const location = window.location.href
-    localStorage.removeItem("token")
-    localStorage.removeItem("username")
-    window.location.href="/"
-}
 const themes = {
     light: {
         bodyBg: '#f5f5f5',

@@ -54,6 +54,9 @@ function decryptRSA(encryptedData, privateKey) {
 
 const readline = require('readline');
 
+const KeycloakConnect = require('keycloak-connect');
+const session = require('express-session');
+
 // Create interface to listen for input
 const rl = readline.createInterface({
     input: process.stdin,
@@ -156,6 +159,27 @@ let saltList = fs.readFileSync("salts.json")
 
 dotenv.config();
 app.use(express.json());
+
+const memoryStore = new session.MemoryStore();
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'some secret',
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore
+}));
+
+// Initialize Keycloak
+const keycloak = new KeycloakConnect({
+    realm: process.env.KEYCLOAK_REALM || 'your-realm',
+    'auth-server-url': process.env.KEYCLOAK_URL || 'http://localhost:8080/auth',
+    'ssl-required': 'external',
+    resource: process.env.KEYCLOAK_CLIENT_ID || 'your-client-id',
+    'confidential-port': 0,
+    'bearer-only': true
+});
+
+// Protect API routes
+app.use('/api/*', keycloak.protect());
 
 function makeMediaFolders(email){
     const sanitizedEmail = email.replace(/[^\w.-]/g, '');
@@ -673,227 +697,177 @@ app.get('/api/onlineUsers', (req,res)=>{
   res.json(returnJson)
 })
 
-server.on('connection', (ws, req) => {
-  console.log(req.headers)
-  const originIp = req.headers["cf-connecting-ip"]
-  console.log('A new client connected!');
-  ws.uuid = uuid.v4()
-  ws.send(JSON.stringify({"uuid":ws.uuid}));
-    wsConnections.push({ "ws":{"uuid":ws.uuid},user:{"username":"UNDEFINED"}, lastMessageTime: 0 , cid:null});
-  
-  // Respond to messages received from the client
-  ws.on('message', (message) => {
-    //console.log(`Received message: ${message}`);
-    
-    let messageJson;
+// Add Keycloak token verification helper
+async function verifyKeycloakToken(token) {
     try {
-      messageJson = JSON.parse(message);
+        const grantManager = keycloak.grantManager;
+        const grant = await grantManager.createGrant({ access_token: token });
+        const accessToken = grant.access_token;
+        
+        if (!accessToken.isExpired()) {
+            return {
+                valid: true,
+                username: accessToken.content.preferred_username,
+                email: accessToken.content.email
+            };
+        }
+        return { valid: false };
     } catch (err) {
-      console.log("Malformed JSON");
-      ws.send(JSON.stringify({
-        "ip": "SERVER",
-        "username": "SERVER",
-        "color": "#00000",
-        "altColor": "#fffff",
-        "timestamp": Date.now(),
-        "type": "error",
-        "content": "Malformed JSON"
-      }));
-      return;
+        console.error('Token verification failed:', err);
+        return { valid: false };
     }
-    
-    if (!messageJson.username && !messageJson.token && !messageJson.type && !messageJson.content &&!messageJson.channelId) {
-      console.log("invalid connection received");
-      ws.send(JSON.stringify({
-        "ip": "SERVER",
-        "username": "SERVER",
-        "color": "#00000",
-        "altColor": "#fffff",
-        "timestamp": Date.now(),
-        "type": "error",
-        "content": "Invalid Request"
-      }));
-      return;
-    }
-    let wsConnection
-    // Get the connection object to track rate limiting
-    
-      wsConnection = wsConnections.find(conn => {
-        console.log("Comparing ws:", conn.ws.uuid, "with:", messageJson.uuid);
-        return conn.ws.uuid == messageJson.uuid;
-      });
-    
-      console.log("Found wsConnection:", wsConnection);
+}
 
-    if (!wsConnection) { console.log("NO VALID WS CONNECTION"); return;}
-
-    const now = Date.now();
-
-    // Rate-limiting check
-    if (now - wsConnection.lastMessageTime < rateLimitInterval) {
-      ws.send(JSON.stringify({
-        "ip": "SERVER",
-        "username": "SERVER",
-        "color": "#00000",
-        "altColor": "#fffff",
-        "timestamp": Date.now(),
-        "type": "error",
-        "content": "You are sending messages too fast, please slow down."
-      }));
-      return;
-    }
-
-    // Update the last message time after passing the rate-limit check
-    wsConnection.lastMessageTime = now;
-
-    jwt.verify(messageJson.token, process.env.SECRET_KEY, (err, jwtUser) => {
-      if (err) {
-        ws.send(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "error",
-          "content": "Invalid Token, please log in again"
-        }));
-        return;
-      }
-
-      let user = getUserByEmail(jwtUser.userId);
-      if (!user) {
-        ws.send(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "internal-error",
-          "content": "Unable to find user"
-        }));
-        return;
-      }
-
-      if (user.username !== messageJson.username) {
-        ws.send(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "error",
-          "content": "Usernames do not match"
-        }));
-        return;
-      }
-
-      if (messageJson.type === "connection") {
-        console.log("NEW CONNECTION")
-        if (!authenticateChannel(jwtUser.userId, messageJson.channelId)){
-          ws.send(JSON.stringify({
-            "ip": "SERVER",
-            "username": "SERVER",
-            "color": "#00000",
-            "altColor": "#fffff",
-            "timestamp": Date.now(),
-            "type": "error",
-            "content": `Unauthorized to Join Channel ${getChannel(messageJson.channelId).name}, Ask Owner for permission. <button class="btn btn-primary" onclick="joinChannel('0')"> Go Back </button>`
-          }))
-          return;
-        }
-        addUserToChannelList(ws,user,messageJson.uuid, messageJson.channelId.toString())
-        broadcastToClients(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "connection",
-          "content": `${user.username} connected from ${originIp} to channel ${getChannel(messageJson.channelId).name}`
-        }), messageJson.channelId);
-        let returnJson = []
-        for (let user of wsConnections){
-          if(!user){
-            returnJson = [{"username":"NO ONLINE USERS", "type":"online"}]
-            continue
-          }
-          if (user.cid == messageJson.channelId.toString()){
-            if (user.lastMessageTime + 180000 <= Date.now()){
-              try{
-                returnJson.push({username:user.user.username, type:"idle"})
-                }catch (e){
-                console.error(e)
-                }
-            }else{
-              try{
-                returnJson.push({username:user.user.username, type:"online"})
-                }catch (e){
-                console.error(e)
-                }
-            }
-          }
-          
-        }
-        let channels = readChannels()
-        let accessable = []
-        for (let channel of channels){
-          if (channel.accessList.find(email => email == user.userId || email =='all') || adminList.map(admin => admin.trim().toLowerCase()).includes(user.userId.trim().toLowerCase()) || channel.ownerId == user.userId){
-            accessable.push({"cid":channel.id, "name":channel.name})
-          }
-        }
-        ws.send(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "groupList",
-          "content": accessable}))
-        
-        broadcastToClients(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "userList",
-          "content": returnJson}))
-        
-      } else if (messageJson.type === "message") {
-        if(readBlockList().some(substring => messageJson.content.includes(substring))){
-          ws.send(JSON.stringify({
-            "ip": "SERVER",
-            "username": "SERVER",
-            "color": "#00000",
-            "altColor": "#fffff",
-            "timestamp": Date.now(),
-            "type": "error",
-            "content": `fuck you`
-          }))
-          return;
-        }
-        broadcastToClients(JSON.stringify({
-          "ip": originIp,
-          "username": user.username,
-          "color": messageJson.color || "#00000",
-          "altColor": messageJson.altColor || "#ffff",
-          "timestamp": messageJson.date || Date.now(),
-          "type": "message",
-          "content": messageJson.content
-        }), messageJson.channelId);
-      } else {
-        ws.send(JSON.stringify({
-          "ip": "SERVER",
-          "username": "SERVER",
-          "color": "#00000",
-          "altColor": "#fffff",
-          "timestamp": Date.now(),
-          "type": "error",
-          "content": "Message type invalid"
-        }));
-      }
+// Update WebSocket message handler
+server.on('connection', (ws, req) => {
+    console.log('A new client connected!');
+    ws.uuid = uuid.v4();
+    ws.send(JSON.stringify({"uuid": ws.uuid}));
+    wsConnections.push({ 
+        "ws": {"uuid": ws.uuid},
+        user: {"username": "UNDEFINED"}, 
+        lastMessageTime: 0, 
+        cid: null
     });
-  });
+
+    ws.on('message', async (message) => {
+        let messageJson;
+        try {
+            messageJson = JSON.parse(message);
+        } catch (err) {
+            console.log("Malformed JSON");
+            ws.send(JSON.stringify({
+                "ip": "SERVER",
+                "username": "SERVER",
+                "color": "#00000",
+                "altColor": "#fffff",
+                "timestamp": Date.now(),
+                "type": "error",
+                "content": "Malformed JSON"
+            }));
+            return;
+        }
+
+        // Validate required fields
+        if (!messageJson.username || !messageJson.token || !messageJson.type || !messageJson.content || !messageJson.channelId) {
+            console.log("invalid connection received");
+            ws.send(JSON.stringify({
+                "ip": "SERVER",
+                "username": "SERVER",
+                "color": "#00000",
+                "altColor": "#fffff",
+                "timestamp": Date.now(),
+                "type": "error",
+                "content": "Invalid Request"
+            }));
+            return;
+        }
+
+        // Get connection for rate limiting
+        let wsConnection = wsConnections.find(conn => conn.ws.uuid === messageJson.uuid);
+        if (!wsConnection) { 
+            console.log("NO VALID WS CONNECTION"); 
+            return;
+        }
+
+        // Rate limiting check
+        const now = Date.now();
+        if (now - wsConnection.lastMessageTime < rateLimitInterval) {
+            ws.send(JSON.stringify({
+                "ip": "SERVER",
+                "username": "SERVER",
+                "color": "#00000",
+                "altColor": "#fffff",
+                "timestamp": Date.now(),
+                "type": "error",
+                "content": "You are sending messages too fast, please slow down."
+            }));
+            return;
+        }
+        wsConnection.lastMessageTime = now;
+
+        // Verify token
+        const tokenVerification = await verifyKeycloakToken(messageJson.token);
+        if (!tokenVerification.valid) {
+            ws.send(JSON.stringify({
+                "ip": "SERVER",
+                "username": "SERVER",
+                "color": "#00000",
+                "altColor": "#fffff",
+                "timestamp": Date.now(),
+                "type": "error",
+                "content": "Invalid Token, please log in again"
+            }));
+            return;
+        }
+
+        // Username verification
+        if (tokenVerification.username !== messageJson.username) {
+            ws.send(JSON.stringify({
+                "ip": "SERVER",
+                "username": "SERVER",
+                "color": "#00000",
+                "altColor": "#fffff",
+                "timestamp": Date.now(),
+                "type": "error",
+                "content": "Username mismatch"
+            }));
+            return;
+        }
+
+        // Handle connection message
+        if (messageJson.type === "connection") {
+            console.log("NEW CONNECTION");
+            if (!authenticateChannel(tokenVerification.email, messageJson.channelId)) {
+                ws.send(JSON.stringify({
+                    "ip": "SERVER",
+                    "username": "SERVER",
+                    "color": "#00000",
+                    "altColor": "#fffff",
+                    "timestamp": Date.now(),
+                    "type": "error",
+                    "content": `Unauthorized to Join Channel ${getChannel(messageJson.channelId).name}, Ask Owner for permission. <button class="btn btn-primary" onclick="joinChannel('0')"> Go Back </button>`
+                }));
+                return;
+            }
+
+            addUserToChannelList(ws, {username: tokenVerification.username}, messageJson.uuid, messageJson.channelId.toString());
+            broadcastToClients(JSON.stringify({
+                "ip": "SERVER",
+                "username": "SERVER",
+                "color": "#00000",
+                "altColor": "#fffff",
+                "timestamp": Date.now(),
+                "type": "connection",
+                "content": `${tokenVerification.username} connected from ${ws._socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
+            }), messageJson.channelId);
+        } 
+        // Handle message
+        else if (messageJson.type === "message") {
+            if (readBlockList().some(substring => messageJson.content.includes(substring))) {
+                ws.send(JSON.stringify({
+                    "ip": "SERVER",
+                    "username": "SERVER",
+                    "color": "#00000",
+                    "altColor": "#fffff",
+                    "timestamp": Date.now(),
+                    "type": "error",
+                    "content": "Message contains blocked content"
+                }));
+                return;
+            }
+
+            broadcastToClients(JSON.stringify({
+                "ip": ws._socket.remoteAddress,
+                "username": tokenVerification.username,
+                "color": messageJson.color || "#00000",
+                "altColor": messageJson.altColor || "#ffff",
+                "timestamp": messageJson.date || Date.now(),
+                "type": "message",
+                "content": messageJson.content
+            }), messageJson.channelId);
+        }
+    });
 
   ws.on("close", () => {
     try {
@@ -919,6 +893,4 @@ server.on('connection', (ws, req) => {
       console.error(err);
     }
   });
-
-  // Send a message to the client once they connect
 });
