@@ -9,6 +9,15 @@
     }
   },
   {
+    "username": "CheesePlusGunpowderAndManyWarcrimes",
+    "email": "eric.wang@stu.ocsb.ca",
+    "passHash": "$2a$10$Pzp8EpIC3XNWXhsFe5qg1uDuDqq1aCchZl4XuTbhSnF8T/zRo1qIu",
+    "active": {
+      "isActive": false,
+      "sessionToken": null
+    }
+  },
+  {
     "username": "Shamoose",
     "email": "fuck@you",
     "passHash": "$2a$10$Pzp8EpIC3XNWXhsFe5qg1uDuDqq1aCchZl4XuTbhSnF8T/zRo1qIu",

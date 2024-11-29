@@ -1,2 +1,6 @@
-./users.json
-./testingStuff.html
+users.json
+testingStuff.html
+*.key
+*.pem
+*.env
+.env
