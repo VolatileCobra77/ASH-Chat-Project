@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const uuid = require("uuid")
-
 const express = require("express");
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto')
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const multer = require('multer');
@@ -12,6 +12,45 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { channel } = require("diagnostics_channel");
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048, // Key size
+    publicKeyEncoding: {
+        type: 'spki', // Recommended for public keys
+        format: 'pem',
+    },
+    privateKeyEncoding: {
+        type: 'pkcs8', // Recommended for private keys
+        format: 'pem',
+    },
+});
+
+/**
+ * Decrypts RSA encrypted data using the server's private key.
+ * @param {string} encryptedData - The Base64-encoded encrypted data.
+ * @param {string} privateKey - The PEM-formatted private key.
+ * @returns {string} - The decrypted plaintext.
+ */
+function decryptRSA(encryptedData, privateKey) {
+  try {
+      // Decrypt the data
+      const decryptedBuffer = crypto.privateDecrypt(
+          {
+              key: privateKey,
+              padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+              oaepHash: 'sha256',
+          },
+          Buffer.from(encryptedData, 'base64') // Convert Base64 to Buffer
+      );
+
+      // Convert the decrypted buffer to a string
+      return decryptedBuffer.toString('utf-8');
+  } catch (error) {
+      console.error('Decryption Error:', error.message);
+      throw new Error('Failed to decrypt the data.');
+  }
+}
+
+
 
 const readline = require('readline');
 
@@ -55,6 +94,24 @@ function processMsgSend(args){
 
 }
 
+function processDisconnect(args){
+
+}
+
+function processHelp(args){
+  if (!args[0]){
+    console.log(`HELP MENU:
+COMMAND      ARGS                   DESCRIPTION
+sendmsg      [channelID] [message]  Sends specified message to specified channel
+disconnect   [email]                Disconnects any users with the matching email from the websocket
+grabIds      [channelName]          Displays all channelIds that match the name (can be multiple)
+help         (command)              Displays this help message or more specific ones per command
+
+[] = REQUIRED
+() = OPTIONAL`)
+  }
+}
+
 rl.on('line', async (input) => {
     const trimmedInput = input.trim();
 
@@ -73,6 +130,9 @@ rl.on('line', async (input) => {
         switch(command){
           case 'exit' : rl.exit();
           case 'sendmsg' : processMsgSend(args);
+          case 'disconnect' : processDisconnect(args);
+          case 'help': processHelp(args)
+          case 'grabId' : processGrabId(args)
         }
     } catch (err) {
         console.error('Error executing command:', err);
@@ -91,6 +151,8 @@ const app = express();
 let adminList =["nathan.fransham@gmail.com", "ivykb@proton.me", "dbug.djh@gmail.com"]
 
 let wsConnections = []
+
+let saltList = fs.readFileSync("salts.json")
 
 dotenv.config();
 app.use(express.json());
@@ -151,9 +213,22 @@ const upload = multer({ storage: storage });
 function broadcastToClients(message, channelId){
     console.log("Channel ID " + channelId)
     console.log()
+    if (!channelId){
+      for(connection of wsConnections){
+        try{
+        connection.ws.send(message)
+        }catch{
+          console.log("Websocket send error")
+        }
+      }
+    }
     for (connection of wsConnections) {
       if (connection.cid == channelId){
+        try{
         connection.ws.send(message);  // Access the 'ws' property of each connection
+        }catch{
+          console.log("websocket send error")
+        }
     }
   }
 }
@@ -324,8 +399,8 @@ app.post("/api/signup", (req,res)=>{
         res.status(400).json({"error":"User Already Exists"})
         return;
     }
-
-    const hashedPass = hashPassword(password)
+    decryptedPassword = decryptRSA(password, privateKey)
+    const hashedPass = hashPassword(decryptedPassword)
     email = email.tolowerCase()
     users.push({
         username,
@@ -371,7 +446,11 @@ app.post("/api/login", (req,res)=>{
         console.log("failure\n reason: User Not Found")
         return
     }
-    if (!checkPassword(user.passHash, password)){
+    if (!password){
+      res.status(400).json({"error":"No password, contact VolatileCobra77"})
+      return
+    }
+    if (!checkPassword(user.passHash, decryptRSA(password, privateKey))){
         res.status(400).json({"error":"Invalid Credentials"})
         console.log("failure\n reason: Invalid Credentials")
         return
@@ -478,6 +557,21 @@ app.get("/api/channels/list", (req,res)=>{
   })
 })
 
+app.get("/api/encryption/publicKey", (req,res) =>{
+  res.json({"publicKey": publicKey})
+
+})
+
+app.post("/api/channels/find", (req,res)=>{
+  let channels = readChannels()
+  for (let channel of channels){
+      if (channel.id == req.body.cid || req.body.cname == channel.name){
+        return res.json(channel)
+      }
+  }
+  return res.status(404).json("Channel Not Found")
+})
+
 app.post('/api/profile/getPFP', (req, res) => {
     let email
     jwt.verify(req.body.token, process.env.SECRET_KEY, (err,user)=>{
@@ -580,6 +674,8 @@ app.get('/api/onlineUsers', (req,res)=>{
 })
 
 server.on('connection', (ws, req) => {
+  console.log(req.headers)
+  const originIp = req.headers["cf-connecting-ip"]
   console.log('A new client connected!');
   ws.uuid = uuid.v4()
   ws.send(JSON.stringify({"uuid":ws.uuid}));
@@ -713,8 +809,55 @@ server.on('connection', (ws, req) => {
           "altColor": "#fffff",
           "timestamp": Date.now(),
           "type": "connection",
-          "content": `${user.username} connected from ${ws._socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
+          "content": `${user.username} connected from ${originIp} to channel ${getChannel(messageJson.channelId).name}`
         }), messageJson.channelId);
+        let returnJson = []
+        for (let user of wsConnections){
+          if(!user){
+            returnJson = [{"username":"NO ONLINE USERS", "type":"online"}]
+            continue
+          }
+          if (user.cid == messageJson.channelId.toString()){
+            if (user.lastMessageTime + 180000 <= Date.now()){
+              try{
+                returnJson.push({username:user.user.username, type:"idle"})
+                }catch (e){
+                console.error(e)
+                }
+            }else{
+              try{
+                returnJson.push({username:user.user.username, type:"online"})
+                }catch (e){
+                console.error(e)
+                }
+            }
+          }
+          
+        }
+        let channels = readChannels()
+        let accessable = []
+        for (let channel of channels){
+          if (channel.accessList.find(email => email == user.userId || email =='all') || adminList.map(admin => admin.trim().toLowerCase()).includes(user.userId.trim().toLowerCase()) || channel.ownerId == user.userId){
+            accessable.push({"cid":channel.id, "name":channel.name})
+          }
+        }
+        ws.send(JSON.stringify({
+          "ip": "SERVER",
+          "username": "SERVER",
+          "color": "#00000",
+          "altColor": "#fffff",
+          "timestamp": Date.now(),
+          "type": "groupList",
+          "content": accessable}))
+        
+        broadcastToClients(JSON.stringify({
+          "ip": "SERVER",
+          "username": "SERVER",
+          "color": "#00000",
+          "altColor": "#fffff",
+          "timestamp": Date.now(),
+          "type": "userList",
+          "content": returnJson}))
         
       } else if (messageJson.type === "message") {
         if(readBlockList().some(substring => messageJson.content.includes(substring))){
@@ -730,7 +873,7 @@ server.on('connection', (ws, req) => {
           return;
         }
         broadcastToClients(JSON.stringify({
-          "ip": ws._socket.remoteAddress,
+          "ip": originIp,
           "username": user.username,
           "color": messageJson.color || "#00000",
           "altColor": messageJson.altColor || "#ffff",

@@ -1,5 +1,61 @@
 const chatForm = document.getElementById("messageInput")
 let msgReturn = document.getElementById("chat-window")
+const chatTitle = document.getElementById("chatTitle")
+
+let socket
+let visible = true
+
+
+// Request notification permissions on page load
+document.addEventListener("DOMContentLoaded", () => {
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+});
+
+document.addEventListener("visibilitychange", () => {
+    visible = document.visibilityState === "visible"
+
+});
+
+function truncateString(str) {
+    return str.length > 30 ? str.slice(0, 27) + "..." : str;
+}
+
+// Function where you want to trigger the notification
+function sendNotification(imgPath, header, content, bypassVisibility = false) {
+    // Check if permission is granted
+    console.log("sending notification!")
+    if (Notification.permission === "granted") {
+        if(!visible || bypassVisibility){
+            new Notification(header, {
+                body: content,
+                icon: imgPath  // optional
+        });}
+    } else {
+        console.log("Notifications are not permitted.");
+        addInfo("Notifications not allowed! <button onclick=\"Notification.requestPermission()\">Click me to request</button>")
+    }
+}
+
+
+async function getChatName(){
+    const data = await fetch("/api/channels/find", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({"cid":localStorage.getItem("channelId")})
+    })
+    const jsonData = await data.json()
+    console.log("THIS IS THE DATA YOU NEED: " + jsonData)
+    chatTitle.innerText = "CHAT: " + jsonData.name
+    localStorage.setItem("channel", jsonData.name)
+    document.getElementById("windowTitle").innerText = "chat.mrpickle.ca | In channel \"" + jsonData.name + "\""
+}
+
+getChatName()
+
 
 let wsUrl;
 const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';  // Use 'wss' if using HTTPS, otherwise 'ws'
@@ -16,31 +72,11 @@ function addMsg(Sender, senderIp, senderColor, message, time){
 
 const host = window.location.hostname;  // Get the current hostname (e.g., localhost or 168.99.44.34)
 
-wsUrl = `${protocol}://${host}/ws`;
+// wsUrl = `${protocol}://${host}/ws`;
+wsUrl = `${protocol}://chat.mrpickle.ca/ws`
+let reconnectAttempts = 0;
+let maxReconnectAttempts = 5;
 
-let socket = new WebSocket(wsUrl)
-
-// When the connection is successfully established
-socket.onopen = function(event) {
-    console.log("WebSocket connection opened");
-    // Optionally, send a message to the server once connected
-    
-};
-function convertTo12Hour(time24) {
-    let [hours, minutes, seconds] = time24.split(':').map(Number);
-    let period = 'AM';
-
-    if (hours === 0) {
-        hours = 12;
-    } else if (hours >= 12) {
-        period = 'PM';
-        if (hours > 12) {
-            hours -= 12;
-        }
-    }
-
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
-}
 function convertDate(date) {
     const months = ["Jan", "Feb", "Mar", "apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
     const suffixes = ["th", "st", "nd", "rd"];
@@ -74,52 +110,124 @@ function getHumanTime(time){
     const humanReadable = `${convertDate(clockDate)} at ${convertTo12Hour(clockTime)}`;
     return humanReadable
 }
+function convertTo12Hour(time24) {
+    let [hours, minutes, seconds] = time24.split(':').map(Number);
+    let period = 'AM';
 
-
-socket.onmessage = function(event) {
-    console.log("Message from server: ", event.data);
-    let message = JSON.parse(event.data)
-    if (message.uuid){
-        localStorage.setItem("uuid", message.uuid)
-        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
-        return
-    }
-    console.log(message)
-     // Convert to a Date object
-
-    // Get human-readable parts of the date
-    const humanReadable = getHumanTime(message.timestamp)
-console.log(humanReadable);
-    if (message.username == "SERVER" && message.ip == "SERVER"){
-        if(message.type == "error" || message.type =="internal-error"){
-            addERROR(message.type, message.content, humanReadable)
-        }else if(message.type == "Server Message"){
-
-
+    if (hours === 0) {
+        hours = 12;
+    } else if (hours >= 12) {
+        period = 'PM';
+        if (hours > 12) {
+            hours -= 12;
         }
-        else{
-            addInfo(message.content, humanReadable)
+    }
+
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+}
+
+function initWebSocket(){
+
+    socket = new WebSocket(wsUrl)
+
+    // When the connection is successfully established
+    socket.onopen = function(event) {
+        addInfo("Connected to Backend", getHumanTime(Date.now()))
+        reconnectAttempts = 0
+        // Optionally, send a message to the server once connected
+        
+    };
+    socket.onclose = function(event){
+        console.log("websocket disconnected!")
+        if(reconnectAttempts >= maxReconnectAttempts){
+            addERROR("Connection Error", "Websocket reconnect failed, check internet connection or contact VolatileCobra77", getHumanTime(Date.now())) 
+        }else{
+            addERROR(`Disconnected from Backend, attempting reconnect. Reconnect attempts ${reconnectAttempts}/${maxReconnectAttempts}`, getHumanTime(Date.now()))
+            reconnectAttempts +=1
+            initWebSocket()
         }
-    }else{
-    
-        addMsg(message.username, message.ip, message.color, message.content, humanReadable)
     }
-};
 
-// When an error occurs
-socket.onerror = function(error) {
-    console.log("WebSocket error: ", error);
-};
 
-// When the connection is closed
-socket.onclose = function(event) {
-    if (event.wasClean) {
-        console.log(`WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-    } else {
-        console.log('Connection died');
-    }
-};
 
+
+    socket.onmessage = function(event) {
+        console.log("Message from server: ", event.data);
+        let message = JSON.parse(event.data)
+        if (message.uuid){
+            localStorage.setItem("uuid", message.uuid)
+            socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
+            return
+        }
+        console.log(message)
+        // Convert to a Date object
+
+        // Get human-readable parts of the date
+        const humanReadable = getHumanTime(message.timestamp)
+    console.log(humanReadable);
+        if (message.username == "SERVER" && message.ip == "SERVER"){
+            if(message.type == "error" || message.type =="internal-error"){
+                addERROR(message.type, message.content, humanReadable)
+                sendNotification("/public/src/imgs/error.png", `ERROR`, `${message.content} occured at ${humanReadable}`)
+            }else if(message.type == "userList"){
+
+                let outputList = []
+
+                for (user of message.content){
+                    outputList.push({"username":user.username, "status":user.type})
+                        
+                }
+                
+                outputList = sortUsers(outputList)
+                console.log(outputList)
+                let onlineContent = document.getElementById("onlineContent")
+                onlineContent.innerHTML = ""
+                for (user of outputList){
+                    
+                    if (user.status ==="online"){
+                        onlineContent.innerHTML+=`<div class="alert alert-info" role="alert"><strong>${user.username}</strong> Status: ${user.status}</div>`
+                    }else{
+                        onlineContent.innerHTML+=`                                <div class="alert alert-warning" role="alert">
+                        <strong>${user.username}</strong> Status: ${user.status}
+                    </div>`
+                    }
+                }
+
+            }else if(message.type =="groupList"){
+                groupsContent.innerHTML = ''
+                for(channel of message.content){
+                    groupsContent.innerHTML += `<a class="groupBtn" href="#" onclick="joinChannel('${channel.cid}')"><div class="alert alert-info" role="alert"><strong>${channel.name}</strong></div></a>`
+                
+                }
+            }
+            else{
+                addInfo(message.content, humanReadable)
+                sendNotification("/public/src/imgs/info.png", `Message from server`, `Server said ${message.content} on the ${humanReadable}`)
+            }
+        }else{
+        
+            addMsg(message.username, message.ip, message.color, message.content, humanReadable)
+            sendNotification("/public/src/imgs/info.png", `New message in channel ${localStorage.getItem("channel")}`, `${message.username} said ${truncateString(message.content)} on the ${humanReadable}`)
+        }
+    };
+
+    // When an error occurs
+    socket.onerror = function(error) {
+        console.log("WebSocket error: ", error);
+    };
+
+    // When the connection is closed
+    socket.onclose = function(event) {
+        if (event.wasClean) {
+            console.log(`WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+        } else {
+            console.log('Connection died');
+        }
+    };
+
+
+}
+initWebSocket()
 function clearScreen(){
     Array.from(document.getElementById('chat-window').children).forEach(childNode => {
         if (childNode.classList.contains("message")) {
@@ -131,6 +239,7 @@ function clearScreen(){
 }
 function disconnect(input){
     socket.close(1000, "Disconnect")
+    socket = null
 }
 
 function copyText(text){
@@ -138,7 +247,12 @@ function copyText(text){
 }
 
 function reconnect(input){
-    window.location.href="/chat/"
+    
+    if(!socket){
+        initWebSocket()
+    }else{
+        addInfo("already connected to websocket!", getHumanTime(Date.now()))
+    }
 }
 
 function help(input){
@@ -208,7 +322,7 @@ async function requestRemoveChannel(name){
     addInfo(`Channel ${name} deleted sucessfully`)
     if(localStorage.getItem("channelName" == name)){
         localStorage.setItem("channelId", 0)
-        window.location.href = "/chat"
+        window.location.href = "/"
         return
     }
     
@@ -279,6 +393,7 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
         document.getElementById("message").value = "";
     } else {
         console.error("WebSocket is not initialized.");
+        addERROR("SOCKET_ERROR", "Websocket is not connected, reload page", getHumanTime(Date.now()))
     }
 });
 function isNearBottom(div) {
@@ -377,7 +492,7 @@ async function getOnlineUsers(){
 
 }
 getOnlineUsers()
-setInterval(getOnlineUsers, 500)
+//setInterval(getOnlineUsers, 500)
 
 async function getAllowedChannels(){
     let returnData = await fetch("/api/channels/list", {
@@ -396,6 +511,6 @@ async function getAllowedChannels(){
 
 function joinChannel(cid){
     localStorage.setItem("channelId", cid)
-    window.location.href="/chat/"
+    window.location.href="/"
 }
-setInterval(getAllowedChannels, 500)
+//setInterval(getAllowedChannels, 500)

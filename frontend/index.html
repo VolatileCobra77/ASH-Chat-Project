@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-
 <html lang="en">
     <head>
-        <title>chat</title>
+        <title id="windowTitle">chat</title>
         <link rel="stylesheet" href="/public/src/output.css">
         <link rel="stylesheet" href="/public/src/custom.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:b|Lexend">
@@ -14,19 +13,16 @@
                 <div class="col-12 d-flex justify-content-center">
                     <ul class="nav nav-tabs w-100 justify-content-center" id="navbar" role="tablist">
                         <li class="nav-item">
-                            <a href="/" class="nav-link active" aria-current="page">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/chat" class="nav-link">Chat</a>
+                            <a id="chatTitle" href="/" class="nav-link active">Chat</a>
                         </li>
                         <li class="nav-item dropdown" id="accountBtn">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="/Profile/Settings">Settings</a>
-                                <a class="dropdown-item" href="/Profile">Profile</a>
+                                <a class="dropdown-item" href="/profile/settings">Settings</a>
+                                <a class="dropdown-item" href="/profile">Profile</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="#" onclick="logout()">logout</a>
-                                <a class="dropdown-item text-danger" href="/Profile/Delete">Delete</a>
+                                <a class="dropdown-item text-danger" href="#" onclick="logout()">Logout</a>
+                                <a class="dropdown-item text-danger" href="/profile/delete">Delete</a>
                             </div>
                         </li>
                         <li class="nav-item" id="loginBtn">
@@ -37,8 +33,50 @@
             </div>
         </div>
         
+        <!-- Chat window and input area -->
+        <div class="" style="height: 100vh;">
+            <!-- Chat window section -->
+                
+                
+
+                <div id="chat-window" class="chat-window border p-2" style="position: absolute; left: 10px; right:30%; top:40px; bottom:110px; overflow-y: auto;">
+                    <!-- Chat messages will go here -->
+                </div>
+                <div id="Online" class="online-list border chat-window p-2" style="position:absolute; right: 10px; bottom:110px; top: 40px; left:70%">
+                            <nav class="nav  nav-pills justify-content-center" style="margin-bottom: 10px;">
+                                <a id="nav-Online" class="nav-link active" href="#" onclick="activateOnline()" aria-current="page">Online</a>
+                                <a id="nav-Groups" class="nav-link" href="#" onclick="activateGroups()">Groups</a>
+                                <a id="nav-Friends" class="nav-link" href="#" onclick="activateFriends()">Friends</a>
+                            </nav>
+                            <div id="onlineContent" class="online-content">
+                                
+                                <div class="alert alert-primary" role="alert">
+                                    <strong>${username}</strong>
+                                </div>
+                                
+                                
+                                
+                            </div>
+                            <div id="groupsContent" class="groups-content visually-hidden">
+                                
+                            </div>
+                            <div id="friendsContent" class="friends-content visually-hidden">
+                                Friends Content
+                            </div>
+                </div>
+            
+            <!-- Message input section at the bottom -->
+            <form id="message-input" class="d-flex align-items-center justify-content-between p-3" style="position:absolute; bottom:10px; left:10px; right:10px; margin-bottom: 10px;">
+                <input type="text" id="message" class="form-control me-2" placeholder="Enter message">
+                <button class="btn btn-primary" type="submit">Send</button>
+            </form>
+        </div>  
+        
+    
+        <!-- Bootstrap JS (for dropdowns) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/public/src/shared.js"></script>
-    <script src="/public/src/home.js"></script>
+    <script src="/public/src/chat.js"></script>
 </html>

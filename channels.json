@@ -17,9 +17,19 @@
     ]
   },
   {
+    "owner": "nathan.fransham@gmail.com",
+    "id": "$2a$10$VNIeRLRJq9Hco2NXkO1Ir.TzzsCdUsk4Rd8GlqauyDEr.UmcA6Mdq",
+    "name": "wow so cool",
+    "accessList": [
+      "all",
+      "nathan.fransham@gmail.com"
+    ],
+    "messages": []
+  },
+  {
     "owner": "ivykb@proton.me",
-    "id": "$2a$10$hH3jefAHn7NsDyZUqMhFk.laZC65TgMtug4LxD8q2B9ypRq4NWzue",
-    "name": "",
+    "id": "$2a$10$NYP06v6l6bDS9xxLdkkHbeiBNsNRZm8qXPlsxuWnceZoDB016qW/q",
+    "name": "<button onclick=\"alert(\"meow\");\">channel</button>",
     "accessList": [
       "all",
       "ivykb@proton.me"
@@ -28,8 +38,8 @@
   },
   {
     "owner": "ivykb@proton.me",
-    "id": "$2a$10$cpIP7E.TcfsjhsalasvZO.JxUjLYlUX018H58bLLrpBMzPMgMe9hG",
-    "name": "<button onclick='for (let i = 0; i < i + 1; i++) { console.log(i/i/i/i/i/i/i/i*i*i*i*i/621); }'>meow :3</button>",
+    "id": "$2a$10$ysyuj4Y8XBolyRkpDysI8ujN/VtTGnZAtgmLBKnQYahds3Ji09oFy",
+    "name": "<button onclick='alert(\"meow-2\");'>channel</button>",
     "accessList": [
       "all",
       "ivykb@proton.me"
@@ -38,8 +48,8 @@
   },
   {
     "owner": "ivykb@proton.me",
-    "id": "$2a$10$uAu9Do/CwRuUWhGzOSbGwOQxv6l4NRnEhBA6gJfVY165IXU73sKbO",
-    "name": "mrrow",
+    "id": "$2a$10$NyLFdExCySiv2mZ/.bQBI.i7ZweVhslpQphVsJ4BA/6R0Y5EXW6Im",
+    "name": "toki pona",
     "accessList": [
       "all",
       "ivykb@proton.me"

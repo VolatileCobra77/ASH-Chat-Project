@@ -4,3 +4,7 @@ testingStuff.html
 *.pem
 *.env
 .env
+node_modules
+code
+microsoft.gpg
+*.json
