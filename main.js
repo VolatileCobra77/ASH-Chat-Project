@@ -57,9 +57,6 @@ const readline = require('readline');
 const KeycloakConnect = require('keycloak-connect');
 const session = require('express-session');
 
-const KeycloakConnect = require('keycloak-connect');
-const session = require('express-session');
-
 // Create interface to listen for input
 const rl = readline.createInterface({
     input: process.stdin,
