@@ -1,35 +1,67 @@
 let loginBtn = document.getElementById("loginBtn")
 let accountBtn = document.getElementById("accountBtn")
-async function authenticateToken(token) {
-    let returnData = await fetch("/api/tokenTester", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        }
+ // Keycloak configuration
+ const keycloak = new Keycloak({
+    url: 'https://keycloak.mrpickle.ca', // Your Keycloak server URL
+    realm: 'mrpickle.ca',              // Your Keycloak realm name
+    clientId: 'ChatClient'       // Your Keycloak client Id
+  });
+  const status = document.getElementById('status');
+  const tokenDisplay = document.getElementById('token-display');
+  const tokenElement = document.getElementById('token');
+
+  // Initialize Keycloak
+  keycloak.init({ onLoad: 'check-sso', silentCheckSsoRedirectUri:window.location.origin + '/public/silent-check-sso.html',  pkceMethod: 'S256', checkLoginIframe: true, enableLogging: true, })
+    .then(authenticated => {
+      keycloak.authenticationSuccess = authenticated
+      if (authenticated) {
+        showLoggedInState();
+      } else {
+        showLoggedOutState();
+      }
+    })
+    .catch(err => {
+      console.error('Keycloak initialization error:', err);
+      window.location.href="/errors/KcAuthError"
     });
-    
-    // Check the status code directly from returnData
-    let jsonData = await returnData.json()
-    console.log(jsonData)
-    return jsonData.authenticated
+
+  // Show logged-in state
+  function showLoggedInState() {
+    loginBtn.classList.add("visualy-hidden")
+    accountBtn.classList.remove("visualy-hidden");
+    console.log("KEYCLOAK TOKEN" + JSON.stringify(keycloak.tokenParsed,null, 4))
+
+    // Refresh the token periodically
+    setInterval(() => {
+      keycloak.updateToken(30).catch(() => {
+        console.warn('Failed to refresh token');
+      });
+    }, 30000);
+  }
+
+  // Show logged-out state
+  function showLoggedOutState() {
+    loginBtn.classList.remove("visualy-hidden")
+    accountBtn.classList.add("visualy-hidden")
+  }
+
+  // Handle login
+  loginBtn.addEventListener('click', () => {
+    keycloak.login();
+  });
+
+
+
+function login() {
+    keycloak.login();
 }
 
-async function checkLoggedIn(){
-    let token = localStorage.getItem("token")
-    let authorized = await authenticateToken(token)
-    console.log({"authorized":authorized, "token":"token"})
-    if(token&&authorized){
-        console.log("logged in")
-        loginBtn.classList.add("visually-hidden")
-        accountBtn.classList.remove("visually-hidden")
-    }else{
-        localStorage.removeItem("token")
-        console.log("not logged in")
-        loginBtn.classList.remove("visually-hidden")
-        accountBtn.classList.add("visually-hidden")
-    }
+function logout() {
+    keycloak.logout();
 }
+
+// Initialize Keycloak when the page loads
+initKeycloak();
 
 function timeAgo(unixTime) {
     const now = Date.now();
@@ -63,14 +95,6 @@ function timeAgo(unixTime) {
     return `${diffInYears} years ago`;
 }
 
-
-checkLoggedIn()
-function logout(){
-    const location = window.location.href
-    localStorage.removeItem("token")
-    localStorage.removeItem("username")
-    window.location.href="/"
-}
 const themes = {
     light: {
         bodyBg: '#f5f5f5',

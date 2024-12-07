@@ -126,13 +126,27 @@ function convertTo12Hour(time24) {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
 }
 
-function initWebSocket(){
+async function initWebSocket(){
+    addInfo("Waiting on KeyCloak token... ", getHumanTime(Date.now()))
+    let startTime = Date.now()
+    while (!keycloak.tokenParsed){
+        if(!keycloak.authenticationSuccess && startTime-Date.now() > 10000){
+            addERROR("Authentication Error", "you are not authenticated. please log in", getHumanTime(Date.now))
+            return
+        }
+        console.log("waiting for KC token")
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    console.log("TOKEN AQUIRED, Continuing")
+    addInfo(`Token Aquired after ${Date.now()-startTime}ms, contacting server...`)
 
     socket = new WebSocket(wsUrl)
 
+
+
     // When the connection is successfully established
     socket.onopen = function(event) {
-        addInfo("Connected to Backend", getHumanTime(Date.now()))
+        addInfo("Connected to Server", getHumanTime(Date.now()))
         reconnectAttempts = 0
         // Optionally, send a message to the server once connected
         
@@ -156,7 +170,8 @@ function initWebSocket(){
         let message = JSON.parse(event.data)
         if (message.uuid){
             localStorage.setItem("uuid", message.uuid)
-            socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":localStorage.getItem("username"), "token":localStorage.getItem("token"), "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
+            console.log("Data Sent for Auth" + JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}))
+            socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
             return
         }
         console.log(message)
@@ -293,7 +308,7 @@ async function getChannels(){
     let returnData = await fetch("/api/channels/list", {
         "method":"GET",
         "headers":{
-            "Authorization":`Bearer ${localStorage.getItem('token')}`
+            "Authorization":`Bearer ${keycloak.token}`
         }
     })
     let returnJson = await returnData.json()
@@ -310,7 +325,7 @@ async function requestRemoveChannel(name){
         "method":"POST",
         "headers":{
             "Content-Type":"application/json",
-            "Authorization":`Bearer ${localStorage.getItem("token")}`
+            "Authorization":`Bearer ${keycloak.token}`
         },
         "body":JSON.stringify({"channelName":name})
     })
@@ -344,7 +359,7 @@ async function createChannel(type, name){
         "method":"POST",
         "headers":{
             "Content-Type":"application/json",
-            "Authorization" : `Bearer ${localStorage.getItem('token')}`
+            "Authorization" : `Bearer ${keycloak.token}`
         },
         "body":JSON.stringify({"channelName":name, "accessList":accessList})
     })
@@ -383,8 +398,8 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
     if (socket) {
         socket.send(JSON.stringify({
             "uuid":localStorage.getItem("uuid"),
-            "username": localStorage.getItem("username"),
-            "token": localStorage.getItem("token"),
+            "username": keycloak.tokenParsed.preferred_username,
+            "token": keycloak.token,
             "type": "message",
             "content": message,
             "timestamp": Date.now(),
@@ -498,7 +513,7 @@ async function getAllowedChannels(){
     let returnData = await fetch("/api/channels/list", {
         "method":"GET",
         "headers":{
-            "Authorization":`Bearer ${localStorage.getItem('token')}`
+            "Authorization":`Bearer ${keyclaok.token}`
         }
     })
     let returnJson = await returnData.json()

@@ -80,9 +80,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
     <script src="/public/src/login.js">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@latest/dist/keycloak.min.js"></script>
     <script src="/public/src/shared.js"></script>
     <script>
-                console.log("AHHHH")
 async function redirectOnLoggedIn(){
     let tokenValid = await authenticateToken(localStorage.getItem("token"))
     console.log(tokenValid)
