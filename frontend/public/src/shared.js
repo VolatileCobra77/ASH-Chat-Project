@@ -52,6 +52,17 @@ let accountBtn = document.getElementById("accountBtn")
 
 
 
+function login() {
+    keycloak.login();
+}
+
+function logout() {
+    keycloak.logout();
+}
+
+// Initialize Keycloak when the page loads
+initKeycloak();
+
 function timeAgo(unixTime) {
     const now = Date.now();
     const diffInSeconds = Math.floor((now - unixTime * 1000) / 1000); // Convert milliseconds to seconds

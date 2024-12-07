@@ -57,6 +57,9 @@ const readline = require('readline');
 const KeycloakConnect = require('keycloak-connect');
 const session = require('express-session');
 
+const KeycloakConnect = require('keycloak-connect');
+const session = require('express-session');
+
 // Create interface to listen for input
 const rl = readline.createInterface({
     input: process.stdin,
@@ -759,6 +762,28 @@ app.get('/api/onlineUsers', (req,res)=>{
   res.json(returnJson)
 })
 
+// Add Keycloak token verification helper
+async function verifyKeycloakToken(token) {
+    try {
+        const grantManager = keycloak.grantManager;
+        const grant = await grantManager.createGrant({ access_token: token });
+        const accessToken = grant.access_token;
+        
+        if (!accessToken.isExpired()) {
+            return {
+                valid: true,
+                username: accessToken.content.preferred_username,
+                email: accessToken.content.email
+            };
+        }
+        return { valid: false };
+    } catch (err) {
+        console.error('Token verification failed:', err);
+        return { valid: false };
+    }
+}
+
+// Update WebSocket message handler
 // Add Keycloak token verification helper
 async function verifyKeycloakToken(token) {
     try {
