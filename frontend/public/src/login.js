@@ -66,7 +66,6 @@ async function getKey(){
     let resJson = await res.json()
     publicKey = resJson.publicKey
 }
-getKey()
 
 document.getElementById("loginForm").addEventListener("submit", async (event)=>{
     event.preventDefault()

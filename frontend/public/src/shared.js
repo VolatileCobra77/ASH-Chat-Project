@@ -1,40 +1,56 @@
 let loginBtn = document.getElementById("loginBtn")
 let accountBtn = document.getElementById("accountBtn")
+ // Keycloak configuration
+ const keycloak = new Keycloak({
+    url: 'https://keycloak.mrpickle.ca', // Your Keycloak server URL
+    realm: 'mrpickle.ca',              // Your Keycloak realm name
+    clientId: 'ChatClient'       // Your Keycloak client Id
+  });
+  const status = document.getElementById('status');
+  const tokenDisplay = document.getElementById('token-display');
+  const tokenElement = document.getElementById('token');
 
-async function initKeycloak() {
-    try {
-        await keycloak.init({
-            onLoad: 'check-sso',
-            silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-            pkceMethod: 'S256'
-        });
-        
-        if (keycloak.authenticated) {
-            loginBtn.classList.add("visually-hidden");
-            accountBtn.classList.remove("visually-hidden");
-            localStorage.setItem("token", keycloak.token);
-            localStorage.setItem("username", keycloak.tokenParsed.preferred_username);
-        } else {
-            loginBtn.classList.remove("visually-hidden");
-            accountBtn.classList.add("visually-hidden");
-            localStorage.removeItem("token");
-            localStorage.removeItem("username");
-        }
-    } catch (err) {
-        console.error('Failed to initialize Keycloak', err);
-    }
-}
+  // Initialize Keycloak
+  keycloak.init({ onLoad: 'check-sso', silentCheckSsoRedirectUri:window.location.origin + '/public/silent-check-sso.html',  pkceMethod: 'S256', checkLoginIframe: true, enableLogging: true, })
+    .then(authenticated => {
+      keycloak.authenticationSuccess = authenticated
+      if (authenticated) {
+        showLoggedInState();
+      } else {
+        showLoggedOutState();
+      }
+    })
+    .catch(err => {
+      console.error('Keycloak initialization error:', err);
+      window.location.href="/errors/KcAuthError"
+    });
 
-function login() {
+  // Show logged-in state
+  function showLoggedInState() {
+    loginBtn.classList.add("visualy-hidden")
+    accountBtn.classList.remove("visualy-hidden");
+    console.log("KEYCLOAK TOKEN" + JSON.stringify(keycloak.tokenParsed,null, 4))
+
+    // Refresh the token periodically
+    setInterval(() => {
+      keycloak.updateToken(30).catch(() => {
+        console.warn('Failed to refresh token');
+      });
+    }, 30000);
+  }
+
+  // Show logged-out state
+  function showLoggedOutState() {
+    loginBtn.classList.remove("visualy-hidden")
+    accountBtn.classList.add("visualy-hidden")
+  }
+
+  // Handle login
+  loginBtn.addEventListener('click', () => {
     keycloak.login();
-}
+  });
 
-function logout() {
-    keycloak.logout();
-}
 
-// Initialize Keycloak when the page loads
-initKeycloak();
 
 function timeAgo(unixTime) {
     const now = Date.now();

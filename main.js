@@ -97,7 +97,39 @@ function processMsgSend(args){
 
 }
 
+function processUsers(args){
+    try{for (const wsConnection of wsConnections){
+      console.log(wsConnection.user)
+    }}catch{
+      console.error("User does not have an email!")
+    }
+}
+
 function processDisconnect(args){
+
+  for (const wsConnection of wsConnections){
+    if (wsConnection.user.email == args[0]){
+      console.log("User found! terminating!")
+      wsConnection.ws.send(JSON.stringify({
+        "ip": "SERVER",
+        "username": "SERVER",
+        "color": "#00000",
+        "altColor": "#fffff",
+        "timestamp": Date.now(),
+        "type": "error",
+        "content": "You have been disconnected by an admin, any attempt to reconnect could result in a ban."
+    }))
+      wsConnection.ws.close()
+      return;
+    }
+    
+  }
+  console.log("No user found")
+  console.log("")
+
+}
+
+function processGrabId(args){
 
 }
 
@@ -136,6 +168,7 @@ rl.on('line', async (input) => {
           case 'disconnect' : processDisconnect(args);
           case 'help': processHelp(args)
           case 'grabId' : processGrabId(args)
+          case 'getUsers' : processUsers(args);
         }
     } catch (err) {
         console.error('Error executing command:', err);
@@ -169,7 +202,7 @@ app.use(session({
 }));
 
 // Initialize Keycloak
-const keycloak = new KeycloakConnect({
+const keycloak = new KeycloakConnect({store:memoryStore}, {
     realm: process.env.KEYCLOAK_REALM || 'your-realm',
     'auth-server-url': process.env.KEYCLOAK_URL || 'http://localhost:8080/auth',
     'ssl-required': 'external',
@@ -178,8 +211,10 @@ const keycloak = new KeycloakConnect({
     'bearer-only': true
 });
 
+app.use(keycloak.middleware())
+
 // Protect API routes
-app.use('/api/*', keycloak.protect());
+//app.use('/api/*', keycloak.protect());
 
 function makeMediaFolders(email){
     const sanitizedEmail = email.replace(/[^\w.-]/g, '');
@@ -397,16 +432,43 @@ const loadUserData = () => {
     return JSON.parse(fs.readFileSync(USER_DATA_FILE, 'utf-8'));
 };
 
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) return res.sendStatus(401);
+const authenticateToken = (req =null, res=null, token=null, next=function(err,user){}, ) => {
+  try {
+    // // Fetch the public keys
+    // const { data } = await axios.get(
+    //   'https://keycloak.mrpickle.ca/realms/mrpickle.ca/protocol/openid-connect/certs'
+    // );
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
-        if (err) {next(err,null);return;}
-        req.user = user;
-        next(null,user);
-    });
+    // // Find the matching key using the "kid" field from the token header
+    // const decodedHeader = jwt.decode(token, { complete: true });
+    // const jwk = data.keys.find(key => key.kid === decodedHeader.header.kid);
+
+    // if (!jwk) throw new Error('Key not found');
+
+    // Construct the public key
+    let publicKey = `-----BEGIN CERTIFICATE-----\nMIICpTCCAY0CBgGTble7OTANBgkqhkiG9w0BAQsFADAWMRQwEgYDVQQDDAttcnBpY2tsZS5jYTAeFw0yNDExMjcxNTU2MDNaFw0zNDExMjcxNTU3NDNaMBYxFDASBgNVBAMMC21ycGlja2xlLmNhMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz2geUfaVXT+xEGolyaD6UuXDNQzO9z9MiDeh2ovElDY+ZlejKHxbtId3dardS+fDCGGpOtisnNWhaBw/K0hbFsp69+z87JnzAUEUpE2FSiU6GIbMSUVUZ341m4LforJeFzU7hqjCSEVgrv70+ZGK0K6snHPfkIR+Kd5sC40M57Ttk6mH9BvSQlW8LvSrJPbAYRUXtGSR7E0QxcMokjG7ry3FiK3RIpz+NV4baQWqNJoOngLUiFCQF2AKlA6bjZ/xxEbbHE0mEs0g7Tc8S5Mo2/KvXgODYkFRfJ/yTErqp+kKemanOMknsHkQ9hd7DzPJ/BgWeXft1XwxOA0ZWjNrOQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQBjIbfqCkM2d0/BBn3JMk4neSE1sJC5/C6EjKIGDqRjiMOPbkVHlWDk3FetDcLBP620yyTKaa3dIheRZ8m2efkGtPznlGa22Z0SOZnv+sWvsvjfhelJe8X9j8cQJkyzzMSLxbSZFKD2SbsPysySgS6DSuC09RzogKGjSzWzrzCRTCURBD4y3DKU0e7B0XRaDNrr5om3maA+E6ufDO8gnyUjdDrVkGWuFZdHEVXqWweX4RysTipq0NbAKOBwlJ0cTyN4C6VGNQrsP+KrzNsMbVz1EiDp5gFSIud6n5ILGplZ1o0X4a4VlnDjyzyvvLmt0wgzPMNUC5HqPNrKAqStLhou\n-----END CERTIFICATE-----`;
+    // Verify the token
+
+    if (!token && !req){
+      console.error("no token provided")
+    }else if (!token){
+      let authorizationHeader = req.headers['authorization']; // Get the header
+      if (authorizationHeader) {
+        token = authorizationHeader.split(' ')[1]; // Extract the token 
+      }
+    }
+
+
+    console.log("verifying token "+token)
+    
+    
+    let payload = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+    console.log('Token is valid:', payload);
+    next(null,payload)
+  } catch (err) {
+    console.error('Token validation failed:', err);
+    next(err,null)
+  }
 };
 
 const saveUserData = (data) => {
@@ -749,7 +811,7 @@ server.on('connection', (ws, req) => {
         }
 
         // Validate required fields
-        if (!messageJson.username || !messageJson.token || !messageJson.type || !messageJson.content || !messageJson.channelId) {
+        if (!messageJson.username || !messageJson.token || !messageJson.type) {
             console.log("invalid connection received");
             ws.send(JSON.stringify({
                 "ip": "SERVER",
@@ -787,8 +849,16 @@ server.on('connection', (ws, req) => {
         wsConnection.lastMessageTime = now;
 
         // Verify token
-        const tokenVerification = await verifyKeycloakToken(messageJson.token);
-        if (!tokenVerification.valid) {
+        let tokenParsed = null
+        authenticateToken(null,null, messageJson.token, (err,user)=>{
+          if(!err){
+            tokenParsed = user
+          }else{
+            console.error("Token not properly authenticated")
+            return
+          }
+        });
+        if (!tokenParsed) {
             ws.send(JSON.stringify({
                 "ip": "SERVER",
                 "username": "SERVER",
@@ -802,7 +872,7 @@ server.on('connection', (ws, req) => {
         }
 
         // Username verification
-        if (tokenVerification.username !== messageJson.username) {
+        if (tokenParsed.preferred_username !== messageJson.username) {
             ws.send(JSON.stringify({
                 "ip": "SERVER",
                 "username": "SERVER",
@@ -812,13 +882,14 @@ server.on('connection', (ws, req) => {
                 "type": "error",
                 "content": "Username mismatch"
             }));
+            console.log(messageJson.username + " " + tokenParsed.preferred_username)
             return;
         }
 
         // Handle connection message
         if (messageJson.type === "connection") {
             console.log("NEW CONNECTION");
-            if (!authenticateChannel(tokenVerification.email, messageJson.channelId)) {
+            if (!authenticateChannel(tokenParsed.email, messageJson.channelId)) {
                 ws.send(JSON.stringify({
                     "ip": "SERVER",
                     "username": "SERVER",
@@ -831,7 +902,7 @@ server.on('connection', (ws, req) => {
                 return;
             }
 
-            addUserToChannelList(ws, {username: tokenVerification.username}, messageJson.uuid, messageJson.channelId.toString());
+            addUserToChannelList(ws, {username: messageJson.username}, messageJson.uuid, messageJson.channelId.toString());
             broadcastToClients(JSON.stringify({
                 "ip": "SERVER",
                 "username": "SERVER",
@@ -839,7 +910,7 @@ server.on('connection', (ws, req) => {
                 "altColor": "#fffff",
                 "timestamp": Date.now(),
                 "type": "connection",
-                "content": `${tokenVerification.username} connected from ${ws._socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
+                "content": `${messageJson.username} connected from ${ws._socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
             }), messageJson.channelId);
         } 
         // Handle message
@@ -859,7 +930,7 @@ server.on('connection', (ws, req) => {
 
             broadcastToClients(JSON.stringify({
                 "ip": ws._socket.remoteAddress,
-                "username": tokenVerification.username,
+                "username": messageJson.username,
                 "color": messageJson.color || "#00000",
                 "altColor": messageJson.altColor || "#ffff",
                 "timestamp": messageJson.date || Date.now(),
