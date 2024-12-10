@@ -469,6 +469,10 @@ function activateFriends(){
 }
 function sortUsers(users) {
     return users.sort((a, b) => {
+        console.log("user1: ")
+        console.log(a)
+        console.log("user2: ")
+        console.log(b)
         // Prioritize 'online' status
         if (a.status === "online" && b.status !== "online") return -1;
         if (a.status !== "online" && b.status === "online") return 1;

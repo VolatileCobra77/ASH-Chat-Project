@@ -61,7 +61,6 @@ function logout() {
 }
 
 // Initialize Keycloak when the page loads
-initKeycloak();
 
 function timeAgo(unixTime) {
     const now = Date.now();

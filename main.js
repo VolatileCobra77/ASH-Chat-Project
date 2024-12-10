@@ -271,7 +271,6 @@ const upload = multer({ storage: storage });
 
 function broadcastToClients(message, channelId){
     console.log("Channel ID " + channelId)
-    console.log()
     if (!channelId){
       for(connection of wsConnections){
         try{
@@ -459,11 +458,11 @@ const authenticateToken = (req =null, res=null, token=null, next=function(err,us
     }
 
 
-    console.log("verifying token "+token)
+   //console.log("verifying token "+token)
     
     
     let payload = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
-    console.log('Token is valid:', payload);
+   //console.log('Token is valid:', payload);
     next(null,payload)
   } catch (err) {
     console.error('Token validation failed:', err);
@@ -709,7 +708,7 @@ app.get("/api/tokenTester",(req,res)=>{
             return
         }
         res.json({"authenticated":true})
-        console.log("authenticated user: "+user.userId)
+        //console.log("authenticated user: "+user.userId)
     })
 })
 
@@ -726,7 +725,8 @@ app.listen(80, ()=>{
   // });
 
 
-const rateLimitInterval = 2000; // 2 seconds 
+const rateLimitInterval = 20000; // 2 seconds 
+const maxMessages = 10
 const server = new ws.Server({ port: 8080 });
 
 app.get('/api/onlineUsers', (req,res)=>{
@@ -802,6 +802,66 @@ async function verifyKeycloakToken(token) {
     }
 }
 
+async function updateUsersAndGroups(ws, messageJson, token) {
+  usersJson = []
+  if(messageJson.channelId === null || messageJson.channelId === undefined){
+    console.log("no channel ID, exiting...")
+    return;
+  }
+  for (let user of wsConnections){
+    console.log("found a user! ")
+    console.log(user.user)
+    if (user.cid == messageJson.channelId.toString()){
+      if (user.messageTimestamps[user.messageTimestamps.length - 1] + 180000 <= Date.now()){
+        try{
+          usersJson.push({username:user.user.username || "NO USERNAME", type:"idle"})
+          }catch (e){
+          console.error(e)
+          }
+      }else{
+        try{
+          usersJson.push({username:user.user.username || "NO USERNAME", type:"online"})
+          }catch (e){
+          console.error(e)
+          }
+      }
+    }
+    
+  }
+  
+  if (!usersJson[0]){
+    console.log("NO USER JSON")
+    usersJson = [{"username":"NO ONLINE USERS", "type":"online"}]
+  }
+  console.log("outputted user json: " + usersJson)
+  ws.send(JSON.stringify({
+    "ip": "SERVER",
+    "username": "SERVER",
+    "color": "#00000",
+    "altColor": "#fffff",
+    "timestamp": Date.now(),
+    "type": "userList",
+    "content": usersJson
+  }))
+  let channels = readChannels()
+  let accessable = []
+  for (let channel of channels){
+    if (channel.accessList.find(email => email == token.email || email =='all') || adminList.map(admin => admin.trim().toLowerCase()).includes(token.email.trim().toLowerCase()) || channel.ownerId == token.email){
+      accessable.push({"cid":channel.id, "name":channel.name})
+    }
+  }
+  ws.send(JSON.stringify({
+    "ip": "SERVER",
+    "username": "SERVER",
+    "color": "#00000",
+    "altColor": "#fffff",
+    "timestamp": Date.now(),
+    "type": "groupList",
+    "content": accessable
+  }))
+}
+
+
 // Update WebSocket message handler
 server.on('connection', (ws, req) => {
     console.log('A new client connected!');
@@ -849,26 +909,32 @@ server.on('connection', (ws, req) => {
 
         // Get connection for rate limiting
         let wsConnection = wsConnections.find(conn => conn.ws.uuid === messageJson.uuid);
-        if (!wsConnection) { 
-            console.log("NO VALID WS CONNECTION"); 
-            return;
-        }
-
-        // Rate limiting check
-        const now = Date.now();
-        if (now - wsConnection.lastMessageTime < rateLimitInterval) {
-            ws.send(JSON.stringify({
-                "ip": "SERVER",
-                "username": "SERVER",
-                "color": "#00000",
-                "altColor": "#fffff",
-                "timestamp": Date.now(),
-                "type": "error",
-                "content": "You are sending messages too fast, please slow down."
-            }));
-            return;
-        }
-        wsConnection.lastMessageTime = now;
+        let now = Date.now()
+        if (!wsConnection.messageTimestamps) {
+          wsConnection.messageTimestamps = [];
+      }
+      
+      // Remove timestamps older than the time window
+      wsConnection.messageTimestamps = wsConnection.messageTimestamps.filter(
+          timestamp => now - timestamp <= rateLimitInterval
+      );
+      
+      // Check if the user exceeded the allowed number of messages
+      if (wsConnection.messageTimestamps.length >= maxMessages) {
+          ws.send(JSON.stringify({
+              "ip": "SERVER",
+              "username": "SERVER",
+              "color": "#00000",
+              "altColor": "#fffff",
+              "timestamp": now,
+              "type": "error",
+              "content": "You are sending messages too fast, please slow down."
+          }));
+          return;
+      }
+      
+      // Add the current timestamp to the list
+      wsConnection.messageTimestamps.push(now);
 
         // Verify token
         let tokenParsed = null
@@ -892,7 +958,7 @@ server.on('connection', (ws, req) => {
             }));
             return;
         }
-
+        updateUsersAndGroups(ws, messageJson, tokenParsed)
         // Username verification
         if (tokenParsed.preferred_username !== messageJson.username) {
             ws.send(JSON.stringify({
