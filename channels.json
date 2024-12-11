@@ -55,5 +55,14 @@
       "ivykb@proton.me"
     ],
     "messages": []
+  },
+  {
+    "id": "$2a$10$sO/z57BYd5pEo7yZ1vtq8.84nAIffojAInbgFKx6NRdJhlj6U9SdK",
+    "name": "shamooseisthebest",
+    "accessList": [
+      "all",
+      null
+    ],
+    "messages": []
   }
 ]

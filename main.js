@@ -188,8 +188,6 @@ let adminList =["nathan.fransham@gmail.com", "ivykb@proton.me", "dbug.djh@gmail.
 
 let wsConnections = []
 
-let saltList = fs.readFileSync("salts.json")
-
 dotenv.config();
 app.use(express.json());
 
@@ -324,7 +322,7 @@ function getUserFromWs(wsConnection) {
 
     for (let connection of wsConnections) {
         if (connection.ws == wsConnection) {
-            console.log("found")
+            //console.log("found")
             return { user: connection.user, obj: connection }
         }
     }
@@ -562,7 +560,7 @@ app.post("/api/googleOauthReturn", (req,res)=>{
 })
 
 app.post("/api/channels/create", (req,res)=>{
-  authenticateToken(req,res,(err, user)=>{
+  authenticateToken(req,res,null, (err, user)=>{
     if (err){
       res.status(500).json({"error":err})
       return;
@@ -577,7 +575,7 @@ app.post("/api/channels/create", (req,res)=>{
   })  
 })
 app.post("/api/channels/delete", (req,res)=>{
-  authenticateToken(req,res,(err,user)=>{
+  authenticateToken(req,res,null,(err,user)=>{
     let channel = getChannel(getChannelIdFromName(req.channelName))
     if (!channel){
       return res.status(400).json({"error":"invalid channel name"})
@@ -599,7 +597,7 @@ app.post("/api/channels/delete", (req,res)=>{
 })
 
 app.post("/api/channels/changeAccess", (req,res)=>{
-    authenticateToken(req,res,(err,user)=>{
+    authenticateToken(req,res,null,(err,user)=>{
       if (err){ res.status(500); return;}
       let channel = getChannel(req.body.cid)
       if (!user.userId == channel.owner){
@@ -625,7 +623,7 @@ app.post("/api/channels/changeAccess", (req,res)=>{
 
 
 app.get("/api/channels/list", (req,res)=>{
-  authenticateToken(req,res,(err,user)=>{
+  authenticateToken(req,res,null,(err,user)=>{
     if (err){
       res.status(500).json({"error":err})
       return
@@ -701,7 +699,7 @@ app.post('/api/profile/getPFP', (req, res) => {
 
 
 app.get("/api/tokenTester",(req,res)=>{
-    authenticateToken(req,res,(err,user)=>{
+    authenticateToken(req,res,null, (err,user)=>{
         if(err){
             res.json({"authenticated":false})
             console.log("Token was Invalid")
@@ -809,8 +807,8 @@ async function updateUsersAndGroups(ws, messageJson, token) {
     return;
   }
   for (let user of wsConnections){
-    console.log("found a user! ")
-    console.log(user.user)
+    //console.log("found a user! ")
+    //console.log(user.user)
     if (user.cid == messageJson.channelId.toString()){
       if (user.messageTimestamps[user.messageTimestamps.length - 1] + 180000 <= Date.now()){
         try{
@@ -833,7 +831,7 @@ async function updateUsersAndGroups(ws, messageJson, token) {
     console.log("NO USER JSON")
     usersJson = [{"username":"NO ONLINE USERS", "type":"online"}]
   }
-  console.log("outputted user json: " + usersJson)
+  //console.log("outputted user json: " + usersJson)
   ws.send(JSON.stringify({
     "ip": "SERVER",
     "username": "SERVER",
@@ -910,9 +908,12 @@ server.on('connection', (ws, req) => {
         // Get connection for rate limiting
         let wsConnection = wsConnections.find(conn => conn.ws.uuid === messageJson.uuid);
         let now = Date.now()
+        try{
         if (!wsConnection.messageTimestamps) {
           wsConnection.messageTimestamps = [];
-      }
+        }}catch{
+          wsConnection.messageTimestamps = [];
+        }
       
       // Remove timestamps older than the time window
       wsConnection.messageTimestamps = wsConnection.messageTimestamps.filter(
@@ -974,6 +975,17 @@ server.on('connection', (ws, req) => {
             return;
         }
 
+        if(messageJson.type === "ping"){
+          //console.log("ping")
+          ws.send(JSON.stringify({
+            "type":"ping",
+            "timeDifference":Date.now() - messageJson.timestamp,
+            "timestamp":Date.now()
+          }))
+          wsConnection.messageTimestamps.pop()
+          return;
+        }
+
         // Handle connection message
         if (messageJson.type === "connection") {
             console.log("NEW CONNECTION");
@@ -1015,7 +1027,7 @@ server.on('connection', (ws, req) => {
                 }));
                 return;
             }
-
+            
             broadcastToClients(JSON.stringify({
                 "ip": ws._socket.remoteAddress,
                 "username": messageJson.username,
@@ -1023,7 +1035,7 @@ server.on('connection', (ws, req) => {
                 "altColor": messageJson.altColor || "#ffff",
                 "timestamp": messageJson.date || Date.now(),
                 "type": "message",
-                "content": messageJson.content
+                "content": urlify(messageJson.content)
             }), messageJson.channelId);
         }
     });
@@ -1053,3 +1065,16 @@ server.on('connection', (ws, req) => {
     }
   });
 });
+function urlify(text) {
+  let urlRegex= /(([a-z]+:\/\/)?(([a-z0-9\-]+\.)+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@/?]*)?)(\s+|$)/gi
+
+  return text.replace(urlRegex, function(url) {
+    if (!url.startsWith("https://") || !url.startsWith("http://")){
+      oldurl = url
+      url = "https://" + url
+    }
+    return '<a target="_blank" href="' + url + '">' + oldurl + '</a>';
+  })
+  // or alternatively
+  // return text.replace(urlRegex, '<a href="$1">$1</a>')
+}

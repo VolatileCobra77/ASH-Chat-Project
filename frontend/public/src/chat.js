@@ -5,6 +5,12 @@ const chatTitle = document.getElementById("chatTitle")
 let socket
 let visible = true
 
+let socketPingInterval = 100
+
+
+document.getElementById("socketPingIntChange").addEventListener("change",()=>{
+    socketPingInterval = document.getElementById("socketPingIntChange").value
+})
 
 // Request notification permissions on page load
 document.addEventListener("DOMContentLoaded", () => {
@@ -180,6 +186,12 @@ async function initWebSocket(){
         // Get human-readable parts of the date
         const humanReadable = getHumanTime(message.timestamp)
     console.log(humanReadable);
+        if(message.type === "ping"){
+            document.getElementById("up").innerText=message.timeDifference
+            document.getElementById("down").innerText = message.timestamp - Date.now()
+            return;
+
+        }
         if (message.username == "SERVER" && message.ip == "SERVER"){
             if(message.type == "error" || message.type =="internal-error"){
                 addERROR(message.type, message.content, humanReadable)
@@ -533,3 +545,21 @@ function joinChannel(cid){
     window.location.href="/"
 }
 //setInterval(getAllowedChannels, 500)
+
+setInterval(()=>{
+    try{
+        socket.send(JSON.stringify({
+            "uuid":localStorage.getItem("uuid"),
+            "username": keycloak.tokenParsed.preferred_username,
+            "token": keycloak.token,
+            "type": "ping",
+            "content": "",
+            "timestamp": Date.now(),
+            "channelId": localStorage.getItem("channelId")
+        }))
+    }catch{
+        //console.log("unable to update ping, websocket not connected")
+        document.getElementById("up").innerText="NAN"
+        document.getElementById("down").innerText = "NAN"
+    }
+}, socketPingInterval)
