@@ -5,8 +5,37 @@ const chatTitle = document.getElementById("chatTitle")
 let socket
 let visible = true
 
-let socketPingInterval = 100
+let socketPingInterval = 300
+let settings = JSON.parse(localStorage.getItem("settings"))
 
+if(!settings){
+    settings= {
+        "Notif":{
+            "enabled":true,
+            "level":0
+        },
+        "Debug":{
+            "enabled":true,
+            "level":0
+        },
+        "Chat":{
+            "primaryColor":"#FFFFFFF",
+            "secondaryColor":"#000000",
+            "auto-link":true,
+            "send-ip":false
+        },
+        "Friends":{
+            "discoverable":false,
+            "friends":[
+                {
+                    "username":"USERNAME",
+                    "email":"someone@example.com"
+                }
+            ]
+        }
+    }
+    localStorage.setItem("settings", JSON.stringify(settings))
+}
 
 document.getElementById("socketPingIntChange").addEventListener("change",()=>{
     socketPingInterval = document.getElementById("socketPingIntChange").value
@@ -29,18 +58,31 @@ function truncateString(str) {
 }
 
 // Function where you want to trigger the notification
-function sendNotification(imgPath, header, content, bypassVisibility = false) {
+function sendNotification(imgPath, header, content, bypassVisibility = false, serverMessage = false) {
     // Check if permission is granted
-    console.log("sending notification!")
+    if (settings.Debug.enabled){console.log("sending notification!")};
     if (Notification.permission === "granted") {
-        if(!visible || bypassVisibility){
-            new Notification(header, {
-                body: content,
-                icon: imgPath  // optional
-        });}
+        if(!visible && settings.Notif.enabled|| bypassVisibility){
+            if (!visible && settings.Notif.level =="0"|| bypassVisibility){
+                new Notification(header, {
+                    body: content,
+                    icon: imgPath  // optional
+            });
+            }else if(!visible && settings.Notif.level =="1" && serverMessage || bypassVisibility){
+                new Notification(header, {
+                    body: content,
+                    icon: imgPath  // optional
+            });
+            }else if(bypassVisibility){
+                new Notification(header, {
+                    body: content,
+                    icon: imgPath  // optional
+            });
+            }
+        }
     } else {
-        console.log("Notifications are not permitted.");
-        addInfo("Notifications not allowed! <button onclick=\"Notification.requestPermission()\">Click me to request</button>")
+        if (settings.Debug.enabled){console.log("Notifications are not permitted.")};
+        !settings.Notif.enabled ? null :addInfo("Notifications not allowed! <button onclick=\"Notification.requestPermission()\">Click me to request</button>")
     }
 }
 
@@ -54,7 +96,7 @@ async function getChatName(){
         body:JSON.stringify({"cid":localStorage.getItem("channelId")})
     })
     const jsonData = await data.json()
-    console.log("THIS IS THE DATA YOU NEED: " + jsonData)
+    if (settings.Debug.enabled){console.log("THIS IS THE DATA YOU NEED: " + jsonData)};
     chatTitle.innerText = "CHAT: " + jsonData.name
     localStorage.setItem("channel", jsonData.name)
     document.getElementById("windowTitle").innerText = "chat.mrpickle.ca | In channel \"" + jsonData.name + "\""
@@ -67,13 +109,13 @@ let wsUrl;
 const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';  // Use 'wss' if using HTTPS, otherwise 'ws'
 
 function addERROR(errorType, errorMsg, time){
-    msgReturn.innerHTML += `<div class="alert alert-danger message" role="alert"><strong>SERVER: </strong>${errorType}: ${errorMsg} <span style="font-size: x-small; ">(Authentic Server Message)</span><span class="float-end me-3"<p> ${time} </p> </span></div>`
+    msgReturn.innerHTML += `<div class=" bg-red-900 rounded-md flex flex-row"><span><img width="30px" height="30px" class="rounded-full" id="pfp" src="/public/media/root/default_pfp.png"> </span><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">SERVER </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> (Authentic server message) </span><span class="text-primary">]</span> <span class="text-orange-500" style="margin-left:10px; margin-right:10px"> ${errorType}: ${message} </span></div>`
 }
 function addInfo(message, time){
-    msgReturn.innerHTML += `<div class="alert alert-info message" role="alert"><strong>SERVER: </strong>INFO: ${message} <span style="font-size: x-small; ">(Authentic Server Message)</span><span class="float-end me-3"<p> ${time} </p> </span></div>`
+    msgReturn.innerHTML += `<div class=" bg-base-300 rounded-md flex flex-row"><span><img width="30px" height="30px" class="rounded-full" id="pfp" src="/public/media/root/default_pfp.png"> </span><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">SERVER </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> (Authentic server message) </span><span class="text-primary">]</span> <span class="text-green-600" style="margin-left:10px; margin-right:10px"> INFO: ${message} </span></div>`
 }
 function addMsg(Sender, senderIp, senderColor, message, time){
-    msgReturn.innerHTML += `<div class=" alert alert-primary message" role="alert"><strong style="color:${senderColor};">${Sender}: </strong>${message} <span style="font-size: x-small; ">(from ${senderIp})</span><span class="float-end me-3 d-flex flex-row"><p style="margin-right:10px;"> ${time} </p> <a href="#" class="" onclick="copyText('${message}')"><i class="copyBtn fa-solid fa-copy"></i></a></span></div>`
+    msgReturn.innerHTML += `<div  class="rounded-md flex flex-row"><span><img width="30px" height="30px" class="rounded-full" id="pfp" src="/public/media/root/default_pfp.png"> </span><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">${Sender} </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> ${senderIp} </span><span class="text-primary">]</span> <span class="text-primary" style="margin-left:10px; margin-right:10px"> ${message} </span></div>`
 }//Wrap all A tags in a span
 
 const host = window.location.hostname;  // Get the current hostname (e.g., localhost or 168.99.44.34)
@@ -136,15 +178,16 @@ async function initWebSocket(){
     addInfo("Waiting on KeyCloak token... ", getHumanTime(Date.now()))
     let startTime = Date.now()
     while (!keycloak.tokenParsed){
-        if(!keycloak.authenticationSuccess && startTime-Date.now() > 10000){
-            addERROR("Authentication Error", "you are not authenticated. please log in", getHumanTime(Date.now))
+        if(!keycloak.authenticationSuccess && Date.now() - startTime > 10000){
+            clearScreen()
+            addERROR("Authentication Error", "you are not authenticated. please <a onclick=\"keycloak.login()\" href=\"#\">log in</a>", getHumanTime(Date.now()))
             return
         }
-        console.log("waiting for KC token")
+        if (settings.Debug.enabled){console.log(`waiting for KC token for ${Date.now()-startTime} ms`)};
         await new Promise(resolve => setTimeout(resolve, 100));
     }
-    console.log("TOKEN AQUIRED, Continuing")
-    addInfo(`Token Aquired after ${Date.now()-startTime}ms, contacting server...`)
+    if (settings.Debug.enabled){console.log("TOKEN AQUIRED, Continuing")};
+    addInfo(`Token Aquired after ${Date.now()-startTime}ms, contacting server...`, getHumanTime(Date.now()))
 
     socket = new WebSocket(wsUrl)
 
@@ -158,7 +201,7 @@ async function initWebSocket(){
         
     };
     socket.onclose = function(event){
-        console.log("websocket disconnected!")
+        if (settings.Debug.enabled){console.log("websocket disconnected!")};
         if(reconnectAttempts >= maxReconnectAttempts){
             addERROR("Connection Error", "Websocket reconnect failed, check internet connection or contact VolatileCobra77", getHumanTime(Date.now())) 
         }else{
@@ -172,20 +215,20 @@ async function initWebSocket(){
 
 
     socket.onmessage = function(event) {
-        console.log("Message from server: ", event.data);
+        if (settings.Debug.enabled){console.log("Message from server: ", event.data);};
         let message = JSON.parse(event.data)
         if (message.uuid){
             localStorage.setItem("uuid", message.uuid)
-            console.log("Data Sent for Auth" + JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}))
+            if (settings.Debug.enabled){console.log("Data Sent for Auth" + JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}))};
             socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
             return
         }
-        console.log(message)
+        if (settings.Debug.enabled){console.log(message)};
         // Convert to a Date object
 
         // Get human-readable parts of the date
         const humanReadable = getHumanTime(message.timestamp)
-    console.log(humanReadable);
+    if (settings.Debug.enabled){console.log(humanReadable);};
         if(message.type === "ping"){
             document.getElementById("up").innerText=message.timeDifference
             document.getElementById("down").innerText = message.timestamp - Date.now()
@@ -195,7 +238,7 @@ async function initWebSocket(){
         if (message.username == "SERVER" && message.ip == "SERVER"){
             if(message.type == "error" || message.type =="internal-error"){
                 addERROR(message.type, message.content, humanReadable)
-                sendNotification("/public/src/imgs/error.png", `ERROR`, `${message.content} occured at ${humanReadable}`)
+                sendNotification("/public/src/imgs/error.png", `ERROR`, `${message.content} occured at ${humanReadable}`, false, true)
             }else if(message.type == "userList"){
 
                 let outputList = []
@@ -206,7 +249,7 @@ async function initWebSocket(){
                 }
                 
                 outputList = sortUsers(outputList)
-                console.log(outputList)
+                if (settings.Debug.enabled){console.log(outputList)};
                 let onlineContent = document.getElementById("onlineContent")
                 onlineContent.innerHTML = ""
                 for (user of outputList){
@@ -229,26 +272,26 @@ async function initWebSocket(){
             }
             else{
                 addInfo(message.content, humanReadable)
-                sendNotification("/public/src/imgs/info.png", `Message from server`, `Server said ${message.content} on the ${humanReadable}`)
+                sendNotification("/public/src/imgs/info.png", `Message from server`, `Server said ${message.content} on the ${humanReadable}`, false, true)
             }
         }else{
         
             addMsg(message.username, message.ip, message.color, message.content, humanReadable)
-            sendNotification("/public/src/imgs/info.png", `New message in channel ${localStorage.getItem("channel")}`, `${message.username} said ${truncateString(message.content)} on the ${humanReadable}`)
+            sendNotification("/public/src/imgs/info.png", `New message in channel ${localStorage.getItem("channel")}`, `${message.username} said ${truncateString(message.content)} on the ${humanReadable}`,false, false)
         }
     };
 
     // When an error occurs
     socket.onerror = function(error) {
-        console.log("WebSocket error: ", error);
+        if (settings.Debug.enabled){console.log("WebSocket error: ", error);};
     };
 
     // When the connection is closed
     socket.onclose = function(event) {
         if (event.wasClean) {
-            console.log(`WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+            if (settings.Debug.enabled){console.log(`WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`);};
         } else {
-            console.log('Connection died');
+            if (settings.Debug.enabled){console.log('Connection died');};
         }
     };
 
@@ -270,7 +313,7 @@ function disconnect(input){
 }
 
 function copyText(text){
-    navigator.clipboard.writeText(text).then(() => {console.log('Text copied to clipboard');}).catch(err => {console.error('Failed to copy text: ', err);});
+    navigator.clipboard.writeText(text).then(() => {if (settings.Debug.enabled){console.log('Text copied to clipboard');}}).catch(err => {console.error('Failed to copy text: ', err);})
 }
 
 function reconnect(input){
@@ -406,7 +449,7 @@ document.getElementById("message-input").addEventListener("submit", (event) => {
         document.getElementById("message").value="";
         return
     }
-    console.log("Message:", message);
+    if (settings.Debug.enabled){console.log("Message:", message);};
     if (socket) {
         socket.send(JSON.stringify({
             "uuid":localStorage.getItem("uuid"),
@@ -453,27 +496,30 @@ let friendsNav = document.getElementById("nav-Friends")
 
 
 function activateOnline(){
-    onlineContent.classList.remove("visually-hidden")
-    groupsContent.classList.add("visually-hidden")
-    friendsContent.classList.add("visually-hidden")
+    onlineContent.classList.remove("hidden")
+    onlineContent.classList.add("flex")
+    groupsContent.classList.add("hidden")
+    friendsContent.classList.add("hidden")
     onlineNav.classList.add("active")
     groupsNav.classList.remove("active")
     friendsNav.classList.remove("active")
     
 }
 function activateGroups(){
-    onlineContent.classList.add("visually-hidden")
-    groupsContent.classList.remove("visually-hidden")
-    friendsContent.classList.add("visually-hidden")
+    onlineContent.classList.add("hidden")
+    groupsContent.classList.remove("hidden")
+    groupsContent.classList.add("flex")
+    friendsContent.classList.add("hidden")
     onlineNav.classList.remove("active")
     groupsNav.classList.add("active")
     friendsNav.classList.remove("active")
     
 }
 function activateFriends(){
-    onlineContent.classList.add("visually-hidden")
-    groupsContent.classList.add("visually-hidden")
-    friendsContent.classList.remove("visually-hidden")
+    onlineContent.classList.add("hidden")
+    groupsContent.classList.add("hidden")
+    friendsContent.classList.remove("hidden")
+    friendsContent.classList.add("flex")
     onlineNav.classList.remove("active")
     groupsNav.classList.remove("active")
     friendsNav.classList.add("active")
@@ -481,10 +527,10 @@ function activateFriends(){
 }
 function sortUsers(users) {
     return users.sort((a, b) => {
-        console.log("user1: ")
-        console.log(a)
-        console.log("user2: ")
-        console.log(b)
+        if (settings.Debug.enabled){console.log("user1: ")};
+        if (settings.Debug.enabled){console.log(a)};
+        if (settings.Debug.enabled){console.log("user2: ")};
+        if (settings.Debug.enabled){console.log(b)};
         // Prioritize 'online' status
         if (a.status === "online" && b.status !== "online") return -1;
         if (a.status !== "online" && b.status === "online") return 1;
@@ -507,7 +553,7 @@ async function getOnlineUsers(){
     }
     
     outputList = sortUsers(outputList)
-    console.log(outputList)
+    if (settings.Debug.enabled){console.log(outputList)};
     let onlineContent = document.getElementById("onlineContent")
     onlineContent.innerHTML = ""
     for (user of outputList){
@@ -558,7 +604,7 @@ setInterval(()=>{
             "channelId": localStorage.getItem("channelId")
         }))
     }catch{
-        //console.log("unable to update ping, websocket not connected")
+        //if (settings.Debug.enabled){console.log("unable to update ping, websocket not connected")}
         document.getElementById("up").innerText="NAN"
         document.getElementById("down").innerText = "NAN"
     }

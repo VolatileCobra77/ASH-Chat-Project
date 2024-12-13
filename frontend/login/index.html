@@ -78,19 +78,13 @@
     </body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
-    <script src="/public/src/login.js">
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/keycloak-js@latest/dist/keycloak.min.js"></script>
     <script src="/public/src/shared.js"></script>
     <script>
-async function redirectOnLoggedIn(){
-    let tokenValid = await authenticateToken(localStorage.getItem("token"))
-    console.log(tokenValid)
-    console.log("REDIRECTING")
-    if (tokenValid){
-        window.location.href="/"
-    }
-}
-    redirectOnLoggedIn()
+        if (!keycloak.tokenParsed){
+            keycloak.login()
+        }else{
+            window.location.href="/"
+        }
     </script>
 </html>

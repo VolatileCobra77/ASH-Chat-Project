@@ -268,7 +268,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 function broadcastToClients(message, channelId){
-    console.log("Channel ID " + channelId)
+    //console.log("Channel ID " + channelId)
     if (!channelId){
       for(connection of wsConnections){
         try{
@@ -1073,7 +1073,7 @@ function urlify(text) {
       oldurl = url
       url = "https://" + url
     }
-    return '<a target="_blank" href="' + url + '">' + oldurl + '</a>';
+    return '<a target="_blank" class="text-secondary underline" href="' + url + '">' + oldurl + '</a>';
   })
   // or alternatively
   // return text.replace(urlRegex, '<a href="$1">$1</a>')
