@@ -912,7 +912,9 @@ server.on('connection', (ws, req) => {
         if (!wsConnection.messageTimestamps) {
           wsConnection.messageTimestamps = [];
         }}catch{
-          wsConnection.messageTimestamps = [];
+          console.error("Could not set messageTimestamp property, forcibly closing")
+          wsConnection.close(1000, "unexpected error, reconnect")
+          console.log("closed")
         }
       
       // Remove timestamps older than the time window
@@ -1010,7 +1012,7 @@ server.on('connection', (ws, req) => {
                 "altColor": "#fffff",
                 "timestamp": Date.now(),
                 "type": "connection",
-                "content": `${messageJson.username} connected from ${ws._socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
+                "content": `${messageJson.username} connected from ${req.headers['x-forwarded-for'] || req.socket.remoteAddress} to channel ${getChannel(messageJson.channelId).name}`
             }), messageJson.channelId);
         } 
         // Handle message
@@ -1029,7 +1031,7 @@ server.on('connection', (ws, req) => {
             }
             
             broadcastToClients(JSON.stringify({
-                "ip": ws._socket.remoteAddress,
+                "ip": req.headers['x-forwarded-for'] || req.socket.remoteAddress,
                 "username": messageJson.username,
                 "color": messageJson.color || "#00000",
                 "altColor": messageJson.altColor || "#ffff",
@@ -1073,7 +1075,7 @@ function urlify(text) {
       oldurl = url
       url = "https://" + url
     }
-    return '<a target="_blank" class="text-secondary underline" href="' + url + '">' + oldurl + '</a>';
+    return '<a class="text-secondary underline" target="_blank" href="' + url + '">' + oldurl + '</a>';
   })
   // or alternatively
   // return text.replace(urlRegex, '<a href="$1">$1</a>')

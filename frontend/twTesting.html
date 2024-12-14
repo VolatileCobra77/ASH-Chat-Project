@@ -2,15 +2,21 @@
 <!-- https://tailwindui.com/components -->
 <html >
     <head>
-        <link rel="stylesheet" href="/public/src/output.css">
-        <link rel="stylesheet" href="/public/src/custom.css">
+        <link rel="stylesheet" href="https://chat.mrpickle.ca/public/src/output.css">
+        <link rel="stylesheet" href="https://chat.mrpickle.ca/public/src/custom.css">
     </head>
-<body data-theme="">
+<body data-theme="synthwave">
 
-<div  class="rounded-md flex flex-row">
-    <span><img width="30px" height="30px" class="rounded-full" id="pfp" src="/public/media/root/default_pfp.png"> </span>[<span class="text-red-600 ml-0.5 mr-0.5">USERNAME </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> 11:59 PM </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> xxx.xxx.xxx.xxx </span>] <span style="margin-left:10px; margin-right:10px"> message content </span>
-    <script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
 
+
+<div id="chat-window" class="ml-5 mt-5 mr-0 mb-0 w-full bg-neutral max-w-[70vw] min-w-[70vw] h-full flex flex-col max-h-full overflow-y-auto overflow-x-hidden whitespace-normal border border-primary rounded-xl p-4">
+    <div  class="rounded-md flex flex-row">
+        <div  class="rounded-md flex flex-row message"><span><img width="30px" height="30px" class="rounded-full" id="pfp" src="/public/media/root/default_pfp.png"> </span><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">${Sender} </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> ${senderIp} </span><span class="text-primary">]</span> <span class="text-primary no-underline ml-[10px] mr-[10px]"> <a class="text-secondary underline">url</a> super long messages probably wont wrap correctly  </span></div>
+    
+    </div>
+</div>
+<div>
+     
 </div>
 </body>
 </html>

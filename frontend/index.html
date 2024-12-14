@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html data-theme="synthwave" class="h-full">
     <head>
-        <link rel="stylesheet" href="/public/src/output.css?v=98999999999999898">
+        <link rel="stylesheet" href="/public/src/output.css">
         <link rel="stylesheet" href="https://static.snoweb.io/snowebsvg/dist/css/themes-0.0.131.css">
+        <link rel="preload" as="image" href="/public/media/root/default_pfp.png">
+        <meta name="viewport" content="viewport-fit=cover">
+        <meta name="description" content="A simple chat application developed for fun by a group of friends">
+        
+        <style>
+            .message a{
+                color:var(--sc);
+                text-decoration:underline;
+            }
+        </style>
         <style>
             :root {
                 --svg-theme-light-primary: #1f2937;
@@ -17,23 +27,23 @@
     </head>
     <body class="flex flex-row h-dvh">
         <div class="flex flex-col flex-grow">
-            <div id="chat-window" class="ml-10 mt-10 mr-10 mb-0 w-full h-full flex flex-col max-h-full overflow-y-auto overflow-x-hidden text-ellipsis whitespace-normal">
+            <div id="chat-window" class="ml-5 mt-5 mr-0 mb-0 w-full bg-neutral max-w-[70vw] min-w-[70vw] h-full flex flex-col max-h-full overflow-y-auto overflow-x-hidden whitespace-normal border border-primary rounded-xl p-4">
             </div>
 
 
-            <div class="flex px-4 py-2" style="bottom: 100px;">
-                <form id="message-input" class="flex flex-row w-full">
-                    <input  class="input input-bordered input-primary input-md w-full ml-10 mr-1" type="text" name="chatMessage" id="message">
-                    <button type="submit" class="btn btn-secondary ml-1 mr-10">send</button>
+            <div class="flex py-2" style="bottom: 100px;">
+                <form id="message-input" class="flex flex-row w-full max-w-[73vw] min-w-[73vw]">
+                    <input  class="input input-bordered  input-primary input-md w-full ml-5 mr-1" type="text" name="chatMessage" id="message">
+                    <button type="submit" class="btn  btn-md btn-secondary ml-1 mr-5">send</button>
                 </form>
             </div>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col max-w-[25vw] min-w-[25vw]">
             <div class="flex flex-grow flex-col flex-1 w-full">
-                <ul class="menu menu-horizontal bg-base-300 w-full h-13 rounded-lg">
-                    <li><a id="nav-Online"href="#" class="active" onclick="activateOnline()">Online</a></li>
-                    <li><a id="nav-Groups" href="#" onclick="activateGroups()">Groups</a></li>
-                    <li><a id="nav-Friends" href="#" onclick="activateFriends()">Friends</a></li>
+                <ul class="menu menu-horizontal bg-base-300 w-full menu-md h-13 rounded-lg">
+                    <li class="mx-3"><a id="nav-Online"href="#" class="active" onclick="activateOnline()">Online</a></li>
+                    <li class="mx-3"><a id="nav-Groups" href="#" onclick="activateGroups()">Groups</a></li>
+                    <li class="mx-3"><a id="nav-Friends" href="#" onclick="activateFriends()">Friends</a></li>
                 </ul>
                 <div id="onlineContent" class="flex flex-col flex-grow w-full h-full">
                     a
@@ -50,15 +60,15 @@
                 </div>
             </div>
             <div class="flex flex-row with-full align-center justify-around h-16 align-bottom">
-                <button>
-                    <svg class="svg-snoweb stroke-primary fill-secondary h-8" height="100" preserveaspectratio="xMidYMid meet" viewbox="0 0 100 100" width="100" x="0" xmlns="http://www.w3.org/2000/svg" y="0">
-                        <path class="svg-stroke-primary" d="M44,22.6a6.2,6.2,0,0,1,12,0,6.2,6.2,0,0,0,9.2,3.8,6.1,6.1,0,0,1,8.4,8.4A6.2,6.2,0,0,0,77.4,44a6.2,6.2,0,0,1,0,12,6.2,6.2,0,0,0-3.8,9.2,6.1,6.1,0,0,1-8.4,8.4A6.2,6.2,0,0,0,56,77.4a6.2,6.2,0,0,1-12,0,6.2,6.2,0,0,0-9.2-3.8,6.1,6.1,0,0,1-8.4-8.4A6.2,6.2,0,0,0,22.6,56a6.2,6.2,0,0,1,0-12,6.2,6.2,0,0,0,3.8-9.2,6.1,6.1,0,0,1,8.4-8.4A6.2,6.2,0,0,0,44,22.6Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
-                        </path>
-                        <path class="svg-stroke-primary" d="M60.7,50A10.7,10.7,0,1,1,50,39.3,10.7,10.7,0,0,1,60.7,50Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
-                        </path>
-                       </svg>
-                  <span class="btm-nav-label text-primary">Settings</span>
-                </button>
+                      <button onclick="document.getElementById('my-drawer').checked = !document.getElementById('my-drawer').checked">
+                        <svg class="svg-snoweb stroke-primary fill-secondary h-8" height="100" preserveaspectratio="xMidYMid meet" viewbox="0 0 100 100" width="100" x="0" xmlns="http://www.w3.org/2000/svg" y="0">
+                            <path class="svg-stroke-primary" d="M44,22.6a6.2,6.2,0,0,1,12,0,6.2,6.2,0,0,0,9.2,3.8,6.1,6.1,0,0,1,8.4,8.4A6.2,6.2,0,0,0,77.4,44a6.2,6.2,0,0,1,0,12,6.2,6.2,0,0,0-3.8,9.2,6.1,6.1,0,0,1-8.4,8.4A6.2,6.2,0,0,0,56,77.4a6.2,6.2,0,0,1-12,0,6.2,6.2,0,0,0-9.2-3.8,6.1,6.1,0,0,1-8.4-8.4A6.2,6.2,0,0,0,22.6,56a6.2,6.2,0,0,1,0-12,6.2,6.2,0,0,0,3.8-9.2,6.1,6.1,0,0,1,8.4-8.4A6.2,6.2,0,0,0,44,22.6Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
+                            </path>
+                            <path class="svg-stroke-primary" d="M60.7,50A10.7,10.7,0,1,1,50,39.3,10.7,10.7,0,0,1,60.7,50Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
+                            </path>
+                           </svg>
+                      <span class="btm-nav-label text-primary">Settings</span>
+                    </button>
                 <button >
                     <svg class="svg-snoweb fill-secondary stroke-primary h-8" height="100" preserveaspectratio="xMidYMid meet" viewbox="0 0 100 100" width="100" x="0" xmlns="http://www.w3.org/2000/svg" y="0">
                         <path class="svg-stroke-primary" d="M67.8,32.2H75a7.1,7.1,0,0,1,7.1,7.1V60.7A7.1,7.1,0,0,1,75,67.8H67.8V82.1L53.6,67.8H39.3a6.8,6.8,0,0,1-5-2.1m0,0L46.4,53.6H60.7a7.1,7.1,0,0,0,7.1-7.2V25a7.1,7.1,0,0,0-7.1-7.1H25A7.1,7.1,0,0,0,17.9,25V46.4A7.1,7.1,0,0,0,25,53.6h7.2V67.8Z" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
@@ -80,8 +90,303 @@
                        </svg>
                   <span class="btm-nav-label text-primary">Logout</span>
                 </button>
+                <div class="drawer drawer-end">
+                    <input id="my-drawer" type="checkbox" class="drawer-toggle hidden" />
+                    <div class="drawer-content">
+                      <!-- Page content here -->
+                      <label for="my-drawer" class="btn btn-primary drawer-button hidden">Open drawer</label>
+                    </div>
+                    <div class="drawer-side">
+                        
+                      <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                      <div class="bg-base-200 text-base-content min-h-full w-80 p-4">
+                        <div class="collapse collapse-plus bg-base-200">
+                            <input type="checkbox" name="my-accordion-3" />
+                            <div class="collapse-title text-xl font-medium">Theme</div>
+                            <div class="collapse-content">
+                                <div class="join join-vertical">
+                                    <input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Light"
+  value="light" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Dark"
+  value="dark" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Cupcake"
+  value="cupcake" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Bumblebee"
+  value="bumblebee" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Emerald"
+  value="emerald" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Corporate"
+  value="corporate" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Synthwave"
+  value="synthwave" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Retro"
+  value="retro" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Cyberpunk"
+  value="cyberpunk" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Valentine"
+  value="valentine" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Halloween"
+  value="halloween" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Garden"
+  value="garden" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Forest"
+  value="forest" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Aqua"
+  value="aqua" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Lofi"
+  value="lofi" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Pastel"
+  value="pastel" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Fantasy"
+  value="fantasy" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Wireframe"
+  value="wireframe" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Black"
+  value="black" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Luxury"
+  value="luxury" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Dracula"
+  value="dracula" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="CMYK"
+  value="cmyk" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Autumn"
+  value="autumn" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Business"
+  value="business" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Acid"
+  value="acid" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Lemonade"
+  value="lemonade" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Night"
+  value="night" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Coffee"
+  value="coffee" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Winter"
+  value="winter" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Dim"
+  value="dim" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Nord"
+  value="nord" />
+<input
+  type="radio"
+  name="theme-buttons"
+  class="btn theme-controller join-item"
+  aria-label="Sunset"
+  value="sunset" />
+
+                                  </div>
+                            </div>
+                          </div>
+                        <div class="collapse collapse-plus bg-base-200">
+                            <input type="checkbox"  />
+                            <div class="collapse-title text-xl font-medium">Notifications</div>
+                            <div class="collapse-content">
+                                <div class="flex flex-col" id="notifRadio">
+                                    
+                                    <div class="flex flex-row">
+                                        <input class="radio-primary" type="radio" name="notifLevel" id="notifLevel-all" value="0" checked/>
+                                        <label class="form-check-label" for="notifLevel-all"> ALL</label>
+                                    </div>
+                                    <div class="flex flex-row">
+                                        <input type="radio" name="notifLevel" id="notifLevel-server" value="1">
+                                        <label for="notifLevel-joinLeave"> Only server messages</label>
+                                    </div>
+                                  
+                                    <div class="flex flex-row">
+                                        <input type="radio" name="notifLevel" id="notifLevel-none" value="2">
+                                        <label for="notifLevel-none"> None</label>
+                                    </div>    
+                                </ul>
+                                <script>
+                                  document.addEventListener("DOMContentLoaded", ()=>{
+                                    //document.getElementById("notif-enabled").checked = settings.Notif.enabled
+                                    //settings.Notif.level = settings.Notif.enabled ? "0" : "2"
+                                      if(settings.Notif.level == "0"){
+                                          document.getElementById("notifLevel-text").innerText = "ALL"
+                                          document.getElementById("notifLevel-all").checked = "true"
+                                          //document.getElementById("notif-enabled").checked = true
+                                          settings.Notif.enabled = true
+                                        }else if(settings.Notif.level == "1"){
+                                          document.getElementById("notifLevel-text").innerText = "SERVER ONLY"
+                                          document.getElementById("notifLevel-server").checked = "true"
+                                          //document.getElementById("notif-enabled").checked = true
+                                          settings.Notif.enabled = true
+                                        }else{
+                                          document.getElementById("notifLevel-text").innerText = "NONE"
+                                          document.getElementById("notifLevel-none").checked = "true"
+                                          //document.getElementById("notif-enabled").checked = false
+                                          settings.Notif.enabled = false
+                                        }
+                                  })
+                                  // document.getElementById("notif-enabled").addEventListener("change",()=>{
+                                  //   settings.Notif.enabled = document.getElementById("notif-enabled").checked
+                                  //   settings.Notif.level = settings.Notif.enabled ? "0" : "2"
+                                  //   settubgs.Notif.enabled ? document.getElementById("notifLevel-ALL").checked = true : document.getElementById("notifLevel-none").checked = true
+                                  //   !settings.Debug.enabled ? null : console.log(`Notifications ${document.getElementById("notif-enabled").checked ? "ENABLED":"DISABLED"}`)
+                                  //   localStorage.setItem("settings", JSON.stringify(settings))
+                                  // })
+                                  document.getElementById('notifRadio').addEventListener('change', function(event) {
+                                    if (event.target.name === 'notifLevel') {
+                                        !settings.Debug.enabled ? null : console.log(`You selected: ${event.target.value}`);
+                                        if(event.target.value == "0"){
+                                          document.getElementById("notifLevel-text").innerText = "ALL"
+                                          settings.Notif.enabled = true
+                                          //document.getElementById("notif-enabled").checked = true
+                                        }else if(event.target.value == "1"){
+                                          document.getElementById("notifLevel-text").innerText = "SERVER ONLY"
+                                          settings.Notif.enabled = true
+                                          //document.getElementById("notif-enabled").checked = true
+                                        }else{
+                                          document.getElementById("notifLevel-text").innerText = "NONE"
+                                          settings.Notif.enabled = false
+                                          //document.getElementById("notif-enabled").checked = false
+                                        }
+                                        settings.Notif.level = event.target.value
+                                      localStorage.setItem("settings", JSON.stringify(settings))
+                                    }
+                                  });
+                                </script>
+                            </div>
+                          </div>
+                          <div class="collapse collapse-plus bg-base-200">
+                            <input type="checkbox" name="my-accordion-3" />
+                            <div class="collapse-title text-xl font-medium">Debug</div>
+                            <div class="collapse-content">
+                              <p>hello</p>
+                            </div>
+                          </div>
+                          
+                      </div>
+                    </div>
+                  </div>
               </div>
         </div>
+        
+          
         
        
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

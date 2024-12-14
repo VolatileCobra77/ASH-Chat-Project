@@ -66,69 +66,7 @@
                                     <!-- <input type="checkbox" name="notif-enabled" id="notif-enabled">
                                     <label for="notif-enabled">Notifications enabled</label> -->
                                     <h5>Notification level: <span id="notifLevel-text">ALL</span></h5>
-                                    <div class="form-check" id="notifRadio">
-                                    
-                                        <input class="form-check-input" type="radio" name="notifLevel" id="notifLevel-all" value="0" checked/>
-                                        <label class="form-check-label" for="notifLevel-all"> ALL </label>
 
-                                      
-                                        <input type="radio" name="notifLevel" id="notifLevel-server" value="1">
-                                        <label for="notifLevel-joinLeave">Only server messages</label>
-                                    
-                                      
-                                        <input type="radio" name="notifLevel" id="notifLevel-none" value="2">
-                                        <label for="notifLevel-none">None</label>
-                                      
-                                    </div>
-                                    <script>
-                                      document.addEventListener("DOMContentLoaded", ()=>{
-                                        //document.getElementById("notif-enabled").checked = settings.Notif.enabled
-                                        //settings.Notif.level = settings.Notif.enabled ? "0" : "2"
-                                          if(settings.Notif.level == "0"){
-                                              document.getElementById("notifLevel-text").innerText = "ALL"
-                                              document.getElementById("notifLevel-all").checked = "true"
-                                              //document.getElementById("notif-enabled").checked = true
-                                              settings.Notif.enabled = true
-                                            }else if(settings.Notif.level == "1"){
-                                              document.getElementById("notifLevel-text").innerText = "SERVER ONLY"
-                                              document.getElementById("notifLevel-server").checked = "true"
-                                              //document.getElementById("notif-enabled").checked = true
-                                              settings.Notif.enabled = true
-                                            }else{
-                                              document.getElementById("notifLevel-text").innerText = "NONE"
-                                              document.getElementById("notifLevel-none").checked = "true"
-                                              //document.getElementById("notif-enabled").checked = false
-                                              settings.Notif.enabled = false
-                                            }
-                                      })
-                                      // document.getElementById("notif-enabled").addEventListener("change",()=>{
-                                      //   settings.Notif.enabled = document.getElementById("notif-enabled").checked
-                                      //   settings.Notif.level = settings.Notif.enabled ? "0" : "2"
-                                      //   settubgs.Notif.enabled ? document.getElementById("notifLevel-ALL").checked = true : document.getElementById("notifLevel-none").checked = true
-                                      //   !settings.Debug.enabled ? null : console.log(`Notifications ${document.getElementById("notif-enabled").checked ? "ENABLED":"DISABLED"}`)
-                                      //   localStorage.setItem("settings", JSON.stringify(settings))
-                                      // })
-                                      document.getElementById('notifRadio').addEventListener('change', function(event) {
-                                        if (event.target.name === 'notifLevel') {
-                                            !settings.Debug.enabled ? null : console.log(`You selected: ${event.target.value}`);
-                                            if(event.target.value == "0"){
-                                              document.getElementById("notifLevel-text").innerText = "ALL"
-                                              settings.Notif.enabled = true
-                                              //document.getElementById("notif-enabled").checked = true
-                                            }else if(event.target.value == "1"){
-                                              document.getElementById("notifLevel-text").innerText = "SERVER ONLY"
-                                              settings.Notif.enabled = true
-                                              //document.getElementById("notif-enabled").checked = true
-                                            }else{
-                                              document.getElementById("notifLevel-text").innerText = "NONE"
-                                              settings.Notif.enabled = false
-                                              //document.getElementById("notif-enabled").checked = false
-                                            }
-                                            settings.Notif.level = event.target.value
-                                          localStorage.setItem("settings", JSON.stringify(settings))
-                                        }
-                                      });
-                                    </script>
                                     
                                   </div>
                                 </div>
