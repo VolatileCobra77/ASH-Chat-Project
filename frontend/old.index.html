@@ -91,71 +91,7 @@
                                   data-bs-parent="#settings-accordion"
                                 >
                                   <div class="accordion-body">
-                                    <!-- <input type="checkbox" name="debug-enabled" id="debug-enabled">
-                                    <label for="debug-enabled">Debug enabled</label> -->
-                                    <h5>Debug Level: <span id="debugLevel-text">ALL</span></h5>
-                                    <div class="form-check" id="debugRadio">
                                     
-                                        <input class="form-check-input" type="radio" name="debugLevel" id="debugLevel-all" value="0"/>
-                                        <label class="form-check-label" for="debugLevel-all"> ALL </label>
-
-                                      
-                                        <input type="radio" name="debugLevel" id="debugLevel-server" value="1" disabled>
-                                        <label for="debugLevel-joinLeave" class="" style="color:gray;"> Important </label>
-                                    
-                                      
-                                        <input type="radio" name="debugLevel" id="debugLevel-none" value="2" checked>
-                                        <label for="debugLevel-none"> None </label>
-                                      
-                                    </div>
-                                    <script>
-                                      document.addEventListener("DOMContentLoaded", ()=>{
-                                        //document.getElementById("debug-enabled").checked = settings.Debug.enabled
-                                        //settings.Debug.level = settings.Debug.enabled ? "0" : "2"
-                                          if(settings.Debug.level == "0"){
-                                              document.getElementById("debugLevel-text").innerText = "ALL"
-                                              document.getElementById("debugLevel-all").checked = "true"
-                                              settings.Debug.enabled = true
-                                              //document.getElementById("debug-enabled").checked = true
-                                            }else if(settings.Debug.level == "1"){
-                                              document.getElementById("debugLevel-text").innerText = "SERVER ONLY"
-                                              document.getElementById("debugLevel-server").checked = "true"
-                                              settings.Debug.enabled = true
-                                              //document.getElementById("debug-enabled").checked = true
-                                            }else{
-                                              document.getElementById("debugLevel-text").innerText = "NONE"
-                                              document.getElementById("debugLevel-none").checked = "true"
-                                              settings.Debug.enabled = false
-                                              //document.getElementById("debug-enabled").checked = false
-                                            }
-                                      })
-                                      // document.getElementById("debug-enabled").addEventListener("change",()=>{
-                                      //   settings.Debug.enabled = document.getElementById("debug-enabled").checked
-                                      //   settings.Debug.level = settings.Debug.enabled ? "0" : "2"
-                                      //   settubgs.Debug.enabled ? document.getElementById("debug-ALL").checked = true : document.getElementById("debug-none").checked = true
-                                      //   localStorage.setItem("settings", JSON.stringify(settings))
-                                      // })
-                                      document.getElementById('debugRadio').addEventListener('change', function(event) {
-                                        if (event.target.name === 'debugLevel') {
-                                            !settings.Debug.enabled ? null : console.log(`You selected: ${event.target.value}`);
-                                            if(event.target.value == "0"){
-                                              document.getElementById("debugLevel-text").innerText = "ALL"
-                                              settings.Debug.enabled = true
-                                              //document.getElementById("debug-enabled").checked = true
-                                            }else if(event.target.value == "1"){
-                                              document.getElementById("debugLevel-text").innerText = "SERVER ONLY"
-                                              settings.Debug.enabled = true
-                                              //document.getElementById("debug-enabled").checked = true
-                                            }else{
-                                              document.getElementById("debugLevel-text").innerText = "NONE"
-                                              settings.Debug.enabled = false
-                                              //document.getElementById("debug-enabled").checked = false
-                                            }
-                                            settings.Debug.level = event.target.value
-                                          localStorage.setItem("settings", JSON.stringify(settings))
-                                        }
-                                      });
-                                    </script>
                                     
                                   </div>
                                 </div>

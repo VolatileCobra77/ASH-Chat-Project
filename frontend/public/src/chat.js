@@ -10,6 +10,7 @@ let settings = JSON.parse(localStorage.getItem("settings"))
 
 if(!settings){
     settings= {
+        "Theme":"light",
         "Notif":{
             "enabled":true,
             "level":0
