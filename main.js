@@ -570,7 +570,7 @@ app.post("/api/channels/create", (req,res)=>{
       res.status(400).json({"error":"ChannelName and AccessList must be specified"})
       return;
     }
-    res.json({"message":"Successfully created channel","cid":addChannel(req.body.channelName, req.body.accessList, user.userId)})
+    res.json({"message":"Successfully created channel","cid":addChannel(req.body.channelName, req.body.accessList, user.email)})
 
   })  
 })
@@ -913,8 +913,7 @@ server.on('connection', (ws, req) => {
           wsConnection.messageTimestamps = [];
         }}catch{
           console.error("Could not set messageTimestamp property, forcibly closing")
-          wsConnection.close(1000, "unexpected error, reconnect")
-          console.log("closed")
+          return;
         }
       
       // Remove timestamps older than the time window
@@ -923,7 +922,7 @@ server.on('connection', (ws, req) => {
       );
       
       // Check if the user exceeded the allowed number of messages
-      if (wsConnection.messageTimestamps.length >= maxMessages) {
+      if (wsConnection.messageTimestamps.length >= maxMessages && !["ping", "channelReq", "delMsg"].includes(messageJson.type)) {
           ws.send(JSON.stringify({
               "ip": "SERVER",
               "username": "SERVER",
@@ -987,6 +986,48 @@ server.on('connection', (ws, req) => {
           wsConnection.messageTimestamps.pop()
           return;
         }
+        if(messageJson.type==="delMsg"){
+          let channels= readChannels()
+          
+          let channel = channels.find(channel => channel.id == messageJson.channelId);
+          console.log("removing " + messageJson.content)
+          channel.messages = channel.messages.filter(message => message.id != messageJson.content)
+          console.log(channel.messages)
+          saveChannels(channels)
+          broadcastToClients(JSON.stringify({
+            "ip": "SERVER",
+            "username": "SERVER",
+            "color": "#00000",
+            "altColor": "#fffff",
+            "timestamp": Date.now(),
+            "type": "delMsg",
+            "content":messageJson.content
+        }), messageJson.channelId)
+        }
+        if(messageJson.type === "channelReq"){
+          if(!messageJson.channelId){
+            ws.send(JSON.stringify({
+              "ip": "SERVER",
+              "username": "SERVER",
+              "color": "#00000",
+              "altColor": "#fffff",
+              "timestamp": Date.now(),
+              "type": "error",
+              "content": "No channel ID"
+          }));
+          return
+          }
+          ws.send(JSON.stringify({
+            "ip": "SERVER",
+            "username": "SERVER",
+            "color": "#00000",
+            "altColor": "#fffff",
+            "timestamp": Date.now(),
+            "type": "messageList",
+            "content": getChannel(messageJson.channelId).messages
+        }));
+        wsConnection.messageTimestamps.pop()
+        }
 
         // Handle connection message
         if (messageJson.type === "connection") {
@@ -1029,16 +1070,32 @@ server.on('connection', (ws, req) => {
                 }));
                 return;
             }
-            
-            broadcastToClients(JSON.stringify({
+            generateUniqueID(messageJson.content, messageJson.timestamp).then(messageId =>{
+              broadcastToClients(JSON.stringify({
                 "ip": req.headers['x-forwarded-for'] || req.socket.remoteAddress,
                 "username": messageJson.username,
                 "color": messageJson.color || "#00000",
                 "altColor": messageJson.altColor || "#ffff",
                 "timestamp": messageJson.date || Date.now(),
                 "type": "message",
-                "content": urlify(messageJson.content)
+                "content": urlify(messageJson.content),
+                "id":messageId
             }), messageJson.channelId);
+            let channels= readChannels()
+            let channel = channels.find(channel => channel.id == messageJson.channelId);
+            channel.messages.push({
+              "ip": req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+              "username": messageJson.username,
+              "color": messageJson.color || "#00000",
+              "altColor": messageJson.altColor || "#ffff",
+              "timestamp": messageJson.date || Date.now(),
+              "type": "message",
+              "content": urlify(messageJson.content),
+              "id":messageId
+          })
+            saveChannels(channels)
+            })
+            
         }
     });
 
@@ -1079,4 +1136,20 @@ function urlify(text) {
   })
   // or alternatively
   // return text.replace(urlRegex, '<a href="$1">$1</a>')
+}
+function generateUniqueID(message, timestamp) {
+  // Combine the message and timestamp to create a unique input string
+  const input = message + ":" + timestamp;
+
+  // Use the SubtleCrypto API for hashing (SHA-256)
+  return crypto.subtle.digest("SHA-256", new TextEncoder().encode(input))
+      .then(hashBuffer => {
+          // Convert the ArrayBuffer result to a hexadecimal string
+          let hexString = '';
+          const view = new DataView(hashBuffer);
+          for (let i = 0; i < hashBuffer.byteLength; i++) {
+              hexString += view.getUint8(i).toString(16).padStart(2, '0');
+          }
+          return hexString;
+      });
 }

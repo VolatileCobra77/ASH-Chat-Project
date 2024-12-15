@@ -16,22 +16,19 @@ moderation?
 - [x] !channel join `(channel:string)`
 - [ ] !channel invite `(email:string)` `(channel:string)`, !channel remove `(email:string)` `(channel:string)`
 - [x] !channel create `(name:string)` `(type:string)`
-- [ ] show active channel in `<title>` or somewhere else
+- [x] show active channel in `<title>` or somewhere else
 - [x] finish making channels actually work, add writing to all of the functions. Solve wsConnection.ws.send() not being a function
-- [ ] add error handling for channel id being null when authenticating 
+- [x] add error handling for channel id being null when authenticating 
 
 
 create will accept either private or public as a type and return an error if it gets not one of those. it will default to public if it gets none. 
 ## themes
-- [ ] dark theme (ew)
-- [ ] neon theme ?!?!?!
+- [x] dark theme (ew)
+- [x] neon theme ?!?!?!
 
-perhaps we could give ids to custom themes. it can really be as simple as combining the hex codes of the custom theme. this might be useful for sharing themes?
-## Log In/Profiles
-- [x] Move Log in and Sign up buttons down on website
-- [ ] add change password api hook1
+perhaps we could give ids to custom themes. it can really be as simple as combining the hex codes of the custom theme. this might be useful for sharing themes
 
 ## Domain
 - [x] Migrate to my domain
-- [ ] Put on its own subdomain
-- [ ] Make websocket connections work (See [notes.md](notes.md))
+- [x] Put on its own subdomain
+- [x] Make websocket connections work (See [notes.md](notes.md))

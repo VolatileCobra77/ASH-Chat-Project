@@ -7,12 +7,34 @@
     ],
     "messages": [
       {
-        "author": "AuthorUSername",
-        "authorIP": "AuthorIP",
-        "content": "STUFF",
-        "color": "#FFFF",
-        "altColor": "#0000",
-        "timestamp": "000000"
+        "ip": "162.158.127.99",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734240232600,
+        "type": "message",
+        "content": "omfg",
+        "id": "d554e9c29e299bc1daf98bec3fabad53929e9c908a07e2e172a7cb2c25fafa30"
+      },
+      {
+        "ip": "162.158.127.99",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734240233752,
+        "type": "message",
+        "content": "finally",
+        "id": "95b1c31c98d89f8fa69ae835e0895ad201ddea125eaf4c3ac5fb2654a24aff60"
+      },
+      {
+        "ip": "162.158.127.99",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734240236901,
+        "type": "message",
+        "content": "it actually works",
+        "id": "e636d18b4ad2062f857650109d5b4044fa407a51ec888e475bd21fffbccd03f9"
       }
     ]
   },

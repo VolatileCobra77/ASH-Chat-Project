@@ -115,8 +115,13 @@ function addERROR(errorType, errorMsg, time){
 function addInfo(message, time){
     msgReturn.innerHTML += `<div class=" message bg-base-300 rounded-md flex flex-row"><span><svg viewBox="-2.4 -2.4 28.80 28.80" fill="none" xmlns="http://www.w3.org/2000/svg" transform="matrix(1, 0, 0, 1, 0, 0)rotate(0)"><g id="SVGRepo_bgCarrier" stroke-width="0" transform="translate(0,0), scale(1)"><rect x="-2.4" y="-2.4" width="28.80" height="28.80" rx="14.4" fill="#7ed0ec" strokewidth="0"></rect></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.144"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M14 2C14 2.74028 13.5978 3.38663 13 3.73244V4H20C21.6569 4 23 5.34315 23 7V19C23 20.6569 21.6569 22 20 22H4C2.34315 22 1 20.6569 1 19V7C1 5.34315 2.34315 4 4 4H11V3.73244C10.4022 3.38663 10 2.74028 10 2C10 0.895431 10.8954 0 12 0C13.1046 0 14 0.895431 14 2ZM4 6H11H13H20C20.5523 6 21 6.44772 21 7V19C21 19.5523 20.5523 20 20 20H4C3.44772 20 3 19.5523 3 19V7C3 6.44772 3.44772 6 4 6ZM15 11.5C15 10.6716 15.6716 10 16.5 10C17.3284 10 18 10.6716 18 11.5C18 12.3284 17.3284 13 16.5 13C15.6716 13 15 12.3284 15 11.5ZM16.5 8C14.567 8 13 9.567 13 11.5C13 13.433 14.567 15 16.5 15C18.433 15 20 13.433 20 11.5C20 9.567 18.433 8 16.5 8ZM7.5 10C6.67157 10 6 10.6716 6 11.5C6 12.3284 6.67157 13 7.5 13C8.32843 13 9 12.3284 9 11.5C9 10.6716 8.32843 10 7.5 10ZM4 11.5C4 9.567 5.567 8 7.5 8C9.433 8 11 9.567 11 11.5C11 13.433 9.433 15 7.5 15C5.567 15 4 13.433 4 11.5ZM10.8944 16.5528C10.6474 16.0588 10.0468 15.8586 9.55279 16.1056C9.05881 16.3526 8.85858 16.9532 9.10557 17.4472C9.68052 18.5971 10.9822 19 12 19C13.0178 19 14.3195 18.5971 14.8944 17.4472C15.1414 16.9532 14.9412 16.3526 14.4472 16.1056C13.9532 15.8586 13.3526 16.0588 13.1056 16.5528C13.0139 16.7362 12.6488 17 12 17C11.3512 17 10.9861 16.7362 10.8944 16.5528Z" fill="#000000"></path> </g></svg> </span><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">SERVER </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> (Authentic server message) </span><span class="text-primary">]</span> <p class="text-green-600" style="margin-left:10px; margin-right:10px"> INFO: ${message} </p></div>`
 }
-function addMsg(Sender, senderIp, senderColor, message, time){
-    msgReturn.innerHTML += `<div  class="rounded-md flex flex-row"><!--<span><img width="30px" height="30px" class="rounded-full block" id="pfp" src="/public/media/root/default_pfp.png"> </span>--><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">${Sender} </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> ${senderIp} </span><span class="text-primary">]</span> <p class="text-primary" style="margin-left:10px; margin-right:10px"> ${message} </p></div>`
+function addMsg(Sender, senderIp, senderColor, message, time, messageId){
+    let msg = `<div id=${messageId} class="rounded-md relative flex flex-row"><!--<span><img width="30px" height="30px" class="rounded-full block" id="pfp" src="/public/media/root/default_pfp.png"> </span>--><span class="text-primary">[</span><span class="text-red-600 ml-0.5 mr-0.5">${Sender} </span> <span class="text-green-600 align-bottom relative ml-0.5 mr-0.5 text-sm sm:text-md"> ${time} </span> <span class="text-purple-600 align-bottom ml-0.5 mr-0.5 text-xs sm:text-sm"> ${senderIp} </span><span class="text-primary">]</span> <p class="text-primary" style="margin-left:10px; margin-right:10px"> ${message} </p>`
+    if (Sender == keycloak.tokenParsed.preferred_username){
+        msg += `<a class="align-bottom no-underline text-error hover:cursor-pointer min-w-[30px] absolute right-0" onclick="deleteMsg('${messageId}')"> <svg class="fill-error stroke-black" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M 27.9999 51.9063 C 41.0546 51.9063 51.9063 41.0781 51.9063 28 C 51.9063 14.9453 41.0312 4.0937 27.9765 4.0937 C 14.8983 4.0937 4.0937 14.9453 4.0937 28 C 4.0937 41.0781 14.9218 51.9063 27.9999 51.9063 Z M 27.9999 47.9219 C 16.9374 47.9219 8.1014 39.0625 8.1014 28 C 8.1014 16.9609 16.9140 8.0781 27.9765 8.0781 C 39.0155 8.0781 47.8983 16.9609 47.9219 28 C 47.9454 39.0625 39.0390 47.9219 27.9999 47.9219 Z M 22.2343 41.9687 L 33.7187 41.9687 C 35.3827 41.9687 36.3436 41.0547 36.4374 39.3906 L 37.3046 20.2656 L 38.6640 20.2656 C 39.2968 20.2656 39.8124 19.7266 39.8124 19.0937 C 39.8124 18.4375 39.2968 17.9219 38.6640 17.9219 L 33.3671 17.9219 L 33.3671 16.0234 C 33.3671 14.1953 32.1483 13.0469 30.4140 13.0469 L 25.5155 13.0469 C 23.7812 13.0469 22.5858 14.1953 22.5858 16.0234 L 22.5858 17.9219 L 17.2655 17.9219 C 16.6327 17.9219 16.0936 18.4375 16.0936 19.0937 C 16.0936 19.7266 16.6327 20.2656 17.2655 20.2656 L 18.6718 20.2656 L 19.5390 39.3906 C 19.6093 41.0547 20.5936 41.9687 22.2343 41.9687 Z M 24.9296 17.9219 L 24.9296 16.4688 C 24.9296 15.8359 25.3749 15.4141 26.0077 15.4141 L 29.8514 15.4141 C 30.5077 15.4141 30.9530 15.8359 30.9530 16.4688 L 30.9530 17.9219 Z M 23.6405 39.3906 C 23.1249 39.3906 22.7733 39.0156 22.7499 38.4531 L 22.1171 22.7266 C 22.0936 22.1875 22.4687 21.7890 23.0546 21.7890 C 23.5936 21.7890 23.9452 22.1641 23.9921 22.7266 L 24.5546 38.4297 C 24.5780 38.9922 24.2265 39.3906 23.6405 39.3906 Z M 27.9530 39.3672 C 27.3905 39.3672 26.9921 38.9922 26.9921 38.4297 L 26.9921 22.7266 C 26.9921 22.1875 27.3671 21.7890 27.9530 21.7890 C 28.5390 21.7890 28.9140 22.1875 28.9140 22.7266 L 28.9140 38.4297 C 28.9140 38.9922 28.5390 39.3672 27.9530 39.3672 Z M 32.2890 39.3906 C 31.7030 39.3906 31.3514 38.9922 31.3749 38.4297 L 31.9374 22.7266 C 31.9609 22.1641 32.3358 21.7890 32.8514 21.7890 C 33.4374 21.7890 33.8358 22.1875 33.8124 22.7266 L 33.1796 38.4531 C 33.1562 39.0156 32.8046 39.3906 32.2890 39.3906 Z"></path></g></svg></a>`
+    }
+    
+    msgReturn.innerHTML += msg + "</div>"
 }
 
 const host = window.location.hostname;  // Get the current hostname (e.g., localhost or 168.99.44.34)
@@ -175,6 +180,13 @@ function convertTo12Hour(time24) {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
 }
 
+async function deleteMsg(messageId){
+    if(socket){
+        socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"delMsg", "content":messageId, "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}))
+    }
+}
+
+
 async function initWebSocket(){
     addInfo("Waiting on KeyCloak token... ", getHumanTime(Date.now()))
     let startTime = Date.now()
@@ -222,6 +234,7 @@ async function initWebSocket(){
             localStorage.setItem("uuid", message.uuid)
             if (settings.Debug.enabled){console.log("Data Sent for Auth" + JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}))};
             socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"connection", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}));
+            socket.send(JSON.stringify({"uuid":localStorage.getItem("uuid"), "username":keycloak.tokenParsed.preferred_username, "token":keycloak.token, "type":"channelReq", "content":"", "timestamp":Date.now(), "channelId":localStorage.getItem("channelId")}))
             return
         }
         if (settings.Debug.enabled){console.log(message)};
@@ -240,6 +253,17 @@ async function initWebSocket(){
             if(message.type == "error" || message.type =="internal-error"){
                 addERROR(message.type, message.content, humanReadable)
                 sendNotification("/public/src/imgs/error.png", `ERROR`, `${message.content} occured at ${humanReadable}`, false, true)
+
+            }else if(message.type == "delMsg"){
+                document.getElementById(message.content).remove()
+            }
+            else if(message.type == "messageList"){
+                console.log("message list recieved for channel")
+                message.content.forEach(message => {
+                    if(message.timestamp && message.ip && message.username && message.content && message.id){
+                        addMsg(message.username, message.ip, null, message.content, getHumanTime(message.timestamp), message.id)
+                    }
+                });
             }else if(message.type == "userList"){
 
                 let outputList = []
@@ -277,7 +301,7 @@ async function initWebSocket(){
             }
         }else{
         
-            addMsg(message.username, message.ip, message.color, message.content, humanReadable)
+            addMsg(message.username, message.ip, message.color, message.content, humanReadable, message.id)
             sendNotification("/public/src/imgs/info.png", `New message in channel ${localStorage.getItem("channel")}`, `${message.username} said ${truncateString(message.content)} on the ${humanReadable}`,false, false)
         }
     };
