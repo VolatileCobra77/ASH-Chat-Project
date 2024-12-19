@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 # Set the path to your project and script
 PROJECT_DIR="/ASH-Chat-Project"
-SCRIPT_NAME="main.js"
+SCRIPT_NAME="npm run  start"
 SESSION_NAME="ash-chat"
 
 # Function to start the tmux session
@@ -24,24 +24,20 @@ start_tmux_session
 
 if tmux has-session -t ash-chat 2>/dev/null; then
     echo "Tmux session successfully started. Connect with: tmux attach-session -t ash-chat"
-    tmux attach-session -t ash-chat
     while true; do
     sleep 5
     done
+    tmux attach-session -t ash-chat
 
 
 
 else
     echo "Failed to start tmux session, starting regular"
     cd /ASH-Chat-Project
-    ./main.js
+    npm run start
 fi
 if tmux has-session -t code-server 2>/dev/null; then
     echo "Tmux session successfully started. Connect with: tmux attach-session -t code-server"
-    tmux attach-session -t ash-chat
-    while true; do
-    sleep 5
-    done
 else
    echo "failed to start code-server"
    cd /ASH-Chat-Project

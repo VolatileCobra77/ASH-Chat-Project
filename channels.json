@@ -7,84 +7,327 @@
     ],
     "messages": [
       {
-        "ip": "162.158.127.99",
+        "ip": "you can't have my IP",
         "username": "volatilecobra77",
         "color": "#00000",
         "altColor": "#ffff",
-        "timestamp": 1734240232600,
+        "timestamp": 1734241850073,
         "type": "message",
-        "content": "omfg",
-        "id": "d554e9c29e299bc1daf98bec3fabad53929e9c908a07e2e172a7cb2c25fafa30"
+        "content": "Welcome to ASH Chat! This was developed by Me and a few friends as a fun project, I hope you enjoy your stay! Type <prefix>help (default prefix is '!') to get some useful commands and other stuff! - Sincerely, VolatileCobra77 (Lead Dev)",
+        "id": "56f462135957c7b7f6565ee02f9e79a9983a817260aea3de396143905f02a71b"
       },
       {
-        "ip": "162.158.127.99",
-        "username": "volatilecobra77",
+        "ip": "162.158.126.73",
+        "username": "ivy",
         "color": "#00000",
         "altColor": "#ffff",
-        "timestamp": 1734240233752,
+        "timestamp": 1734285579081,
         "type": "message",
-        "content": "finally",
-        "id": "95b1c31c98d89f8fa69ae835e0895ad201ddea125eaf4c3ac5fb2654a24aff60"
+        "content": "> you can't have my ip",
+        "id": "9fa95f45774dce08ab6cffee48ecec98bc09d84248194bbc669f6c1d62af283b"
       },
       {
-        "ip": "162.158.127.99",
+        "ip": "162.158.126.73",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734285581308,
+        "type": "message",
+        "content": "lmao",
+        "id": "b54d6bff1035d25cfacfbb15ee501d97c73cff9d74ad80f5f2cbb93dd9704d98"
+      },
+      {
+        "ip": "162.158.126.73",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734285601515,
+        "type": "message",
+        "content": "holy shit?",
+        "id": "2a9f623565a89c5f0795252aa59f4a4d0988b009bed7984d27b6abe2b62aafea"
+      },
+      {
+        "ip": "162.158.126.73",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734285607093,
+        "type": "message",
+        "content": "a delete button?!",
+        "id": "db40a97a152ec42b8b9f22490ec0fb39a97ba5ee5b99c68498c7a038b33e4004"
+      },
+      {
+        "ip": "162.158.126.73",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734285676954,
+        "type": "message",
+        "content": "okay the help menu is actually good i reckon",
+        "id": "fcda43796371f388afb9efc81c3c3ef07c1faa88c0cdbc15c7c3e36d00c05a6b"
+      },
+      {
+        "ip": "162.158.126.253",
         "username": "volatilecobra77",
         "color": "#00000",
         "altColor": "#ffff",
-        "timestamp": 1734240236901,
+        "timestamp": 1734293982492,
         "type": "message",
-        "content": "it actually works",
-        "id": "e636d18b4ad2062f857650109d5b4044fa407a51ec888e475bd21fffbccd03f9"
+        "content": "its amazing",
+        "id": "21a0c884c799a88149b0035584b6034a003fd575b164d325c53368f0a13c20c6"
+      },
+      {
+        "ip": "172.69.130.5",
+        "username": "aiiti",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734355812201,
+        "type": "message",
+        "content": "hello",
+        "id": "3bcf65b1e30b6f6984fd343bd50581ae2411f95b039a8e69b6e951717834648b"
+      },
+      {
+        "ip": "162.158.127.101",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734360435610,
+        "type": "message",
+        "content": "yoski broski",
+        "id": "90f127d71d0295840f9e06ac93aaa6c1b9dafb7a0e5b994e8f4d2cf0868a74c5"
+      },
+      {
+        "ip": "162.158.127.101",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734360440618,
+        "type": "message",
+        "content": "how goes it",
+        "id": "bf7e2f5e6d25a2a503390ce96089c7c5098b03ca2c2170ca3e021c6c9f1b749d"
+      },
+      {
+        "ip": "162.158.126.48",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734368309090,
+        "type": "message",
+        "content": "wowoie this looks so cool",
+        "id": "0f0ca678493ee1c1f00a2efbd338bcab2bf1e0e34f3b998d81b59799890d39de"
+      },
+      {
+        "ip": "172.71.120.4",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622309035,
+        "type": "message",
+        "content": "yoski broski",
+        "id": "3a35c32bbb2b7cc96236bf43dd80a7994ff10a198905a78b6be7d09a678ac7ca"
+      },
+      {
+        "ip": "172.71.120.4",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622311288,
+        "type": "message",
+        "content": "hows it going",
+        "id": "1e96b1b3a10e1503d02037f0181847ac251e02e3c4e666efbb680d69ee8fdf97"
+      },
+      {
+        "ip": "172.71.120.4",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622313228,
+        "type": "message",
+        "content": "what's upp",
+        "id": "6e1d08c7c73fe5704b8fd81d6b3e3dc9ce34b0daacbb612d32daed98f4e49a3f"
+      },
+      {
+        "ip": "172.69.130.191",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622331591,
+        "type": "message",
+        "content": "yipe",
+        "id": "1e96bdba6382a9867dc31db357ea3d439a951653de995bc80a8537fd016af01a"
+      },
+      {
+        "ip": "172.71.120.4",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622338580,
+        "type": "message",
+        "content": "go to the live share link place",
+        "id": "553163e619259312a8f2342613b4214f9974d6c1a32c07b877e389a9cbacc01e"
+      },
+      {
+        "ip": "172.71.120.4",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622340868,
+        "type": "message",
+        "content": "it looks cool",
+        "id": "633ee56f31f78af19b28818be16dbe668c95df5cbb0de302cb0db56120786485"
+      },
+      {
+        "ip": "172.69.214.14",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622371404,
+        "type": "message",
+        "content": "it's so ':3'",
+        "id": "56e4ab05521076f190e269c96a7703fde880998abd79db79ffb9cd173abd241c"
+      },
+      {
+        "ip": "172.69.214.14",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622372832,
+        "type": "message",
+        "content": "!!!",
+        "id": "ed86687b738a94a4c9eeb993694e0e7baa1625e32cb55bfce1b0443a07117445"
+      },
+      {
+        "ip": "108.162.241.69",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734622580071,
+        "type": "message",
+        "content": "mrrp,,,",
+        "id": "0156199dba818df48885f22c87438870a4263de42d71513b1aace360332e4336"
+      },
+      {
+        "ip": "172.69.130.204",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623319138,
+        "type": "message",
+        "content": "yooo",
+        "id": "79b077d9f5eef49bcd0e938c056cbc93541a294a89414917a5106e2ac2dae50a"
+      },
+      {
+        "ip": "172.69.130.204",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623334438,
+        "type": "message",
+        "content": "I made some color changes and italicized the ip address",
+        "id": "387fca8db7cfad84322006a2bbe8299e498b3c49098bc4178acd7b59c0f420e7"
+      },
+      {
+        "ip": "172.69.130.204",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623342720,
+        "type": "message",
+        "content": "you like?",
+        "id": "f709badbc642edf4dbcb720b532f7a89d857c8c8b1e03d933ac28953e212ce55"
+      },
+      {
+        "ip": "172.69.130.204",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623376008,
+        "type": "message",
+        "content": "I'ma go do some stuff on the tw-testing for replies",
+        "id": "1fc934119f3f8c6834819cb3fae9be59aa8b52fd161f725ae65eaf8a33442cb0"
+      },
+      {
+        "ip": "172.69.130.204",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623380553,
+        "type": "message",
+        "content": "you can join me iyw",
+        "id": "2a428b0b302d39f172f6b6bbf92c0db3789b4ea3672c9a0ea6b4f6cdd1614ce3"
+      },
+      {
+        "ip": "108.162.241.79",
+        "username": "ivy",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623403522,
+        "type": "message",
+        "content": "sure!",
+        "id": "19dd8930f16fb6cb854bc7458340d5efde7434071ad2d8e3dabdbaf1e55ba6ba"
+      },
+      {
+        "ip": "172.69.130.204",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734623414093,
+        "type": "message",
+        "content": "liveshare is up",
+        "id": "f7697933d52548932f238bc754c496a6a48f67a34e3f693eebc3920579dc9c25"
       }
     ]
   },
   {
     "owner": "nathan.fransham@gmail.com",
-    "id": "$2a$10$VNIeRLRJq9Hco2NXkO1Ir.TzzsCdUsk4Rd8GlqauyDEr.UmcA6Mdq",
-    "name": "wow so cool",
+    "id": "$2a$10$FUVusblqHOnjdOy3LF2wo.zgz5oa.uOtfPNdvz4m.SMAWbPlMdITa",
+    "name": "ADMINS",
     "accessList": [
-      "all",
-      "nathan.fransham@gmail.com"
+      "nathan.fransham@gmail.com",
+      "ivykb@proton.me",
+      "dbug.djh@gmail.com"
     ],
-    "messages": []
-  },
-  {
-    "owner": "ivykb@proton.me",
-    "id": "$2a$10$NYP06v6l6bDS9xxLdkkHbeiBNsNRZm8qXPlsxuWnceZoDB016qW/q",
-    "name": "<button onclick=\"alert(\"meow\");\">channel</button>",
-    "accessList": [
-      "all",
-      "ivykb@proton.me"
-    ],
-    "messages": []
-  },
-  {
-    "owner": "ivykb@proton.me",
-    "id": "$2a$10$ysyuj4Y8XBolyRkpDysI8ujN/VtTGnZAtgmLBKnQYahds3Ji09oFy",
-    "name": "<button onclick='alert(\"meow-2\");'>channel</button>",
-    "accessList": [
-      "all",
-      "ivykb@proton.me"
-    ],
-    "messages": []
-  },
-  {
-    "owner": "ivykb@proton.me",
-    "id": "$2a$10$NyLFdExCySiv2mZ/.bQBI.i7ZweVhslpQphVsJ4BA/6R0Y5EXW6Im",
-    "name": "toki pona",
-    "accessList": [
-      "all",
-      "ivykb@proton.me"
-    ],
-    "messages": []
-  },
-  {
-    "id": "$2a$10$sO/z57BYd5pEo7yZ1vtq8.84nAIffojAInbgFKx6NRdJhlj6U9SdK",
-    "name": "shamooseisthebest",
-    "accessList": [
-      "all",
-      null
-    ],
-    "messages": []
+    "messages": [
+      {
+        "ip": "162.158.126.68",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734360580702,
+        "type": "message",
+        "content": "Hello yall, this is the admin server",
+        "id": "0b066a9d3592feb3cb876078dd41e384a61119b42cb8ae48e3e0440f40463f77"
+      },
+      {
+        "ip": "162.158.126.68",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734360600349,
+        "type": "message",
+        "content": "im gonna make a vscode liveshare availble at <a class=\"text-secondary underline\" target=\"_blank\" href=\"https://chat.mrpickle.ca/liveshare\">chat.mrpickle.ca/liveshare</a>",
+        "id": "62f470f0b9198a16b979e02e0b5935ed5aa757520685d480b266a1c7f8911fb9"
+      },
+      {
+        "ip": "162.158.126.68",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734360608982,
+        "type": "message",
+        "content": "if youre logged in you should be able to see it",
+        "id": "6320acffd6be55507e21e38fb12cf2658b3c3013e26afd7130df3bf4bb8f5d05"
+      },
+      {
+        "ip": "162.158.126.68",
+        "username": "volatilecobra77",
+        "color": "#00000",
+        "altColor": "#ffff",
+        "timestamp": 1734360614790,
+        "type": "message",
+        "content": "otherwise you have to log in",
+        "id": "162f294b983c7310e3a21cc9f7027b5c7f282648cd00774ff16c9d0483f47d0e"
+      }
+    ]
   }
 ]

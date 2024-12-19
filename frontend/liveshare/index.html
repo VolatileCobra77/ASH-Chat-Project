@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="/public/src/output.css"
+      rel="stylesheet"
+    />
+    <title>Redirecting to liveshare..</title>
+  </head>
+  <body>
+    <div class="hero bg-base-200 min-h-screen">
+        <div class="hero-content text-center flex flex-col">
+          <div class="max-w-md">
+            <h1 class="text-5xl font-bold" id="header">Redirecting to VS-CODE liveshare <span id="dots"></span></h1>
+            <div class="py-6">
+                <p id="waitText"></p>
+                <p id="time"></p>
+            </div>
+            <label class="label cursor-pointer justify-center self-center">
+                
+                <input id="autoRedirect" type="checkbox" class="checkbox checkbox-primary checkbox-lg" />
+                <span class="label-text ml-3 text-base italic">Redirect once complete?</span>
+              </label>
+            
+            <div id="tooltipContainer" class="tooltip tooltip-info tooltip-bottom hidden mb-3" data-tip="how can you see this???">
+                <button id="urlBtn"class="btn btn-primary tooltip" onclick="window.location.href=url.url">Go to Liveshare</button>
+            </div>
+           <p class="text-neutral-500 text-sm"> Got here by mistake? <a href="/" class="text-neutral-700 text-sm underline"> Go Home</a> </p>
+          </div>
+        </div>
+      </div>
+    <div class="hidden">
+        <!-- This is for theme-setting because im lazy, it will never actually appear -->
+        <input type="radio" name="theme-buttons" id="th-light" class="btn theme-controller join-item" aria-label="Light" value="light" /><input type="radio" name="theme-buttons" id="th-dark" class="btn theme-controller join-item" aria-label="Dark" value="dark" /><input type="radio" name="theme-buttons" id="th-cupcake" class="btn theme-controller join-item" aria-label="Cupcake" value="cupcake" /><input type="radio" name="theme-buttons" id="th-bumblebee" class="btn theme-controller join-item" aria-label="Bumblebee" value="bumblebee" /><input type="radio" name="theme-buttons" id="th-emerald" class="btn theme-controller join-item" aria-label="Emerald" value="emerald" /><input type="radio" name="theme-buttons" id="th-corporate" class="btn theme-controller join-item" aria-label="Corporate" value="corporate" /><input type="radio" name="theme-buttons" id="th-synthwave" class="btn theme-controller join-item" aria-label="Synthwave" value="synthwave" /><input type="radio" name="theme-buttons" id="th-retro" class="btn theme-controller join-item" aria-label="Retro" value="retro" /><input type="radio" name="theme-buttons" id="th-cyberpunk" class="btn theme-controller join-item" aria-label="Cyberpunk" value="cyberpunk" /><input type="radio" name="theme-buttons" id="th-valentine" class="btn theme-controller join-item" aria-label="Valentine" value="valentine" /><input type="radio" name="theme-buttons" id="th-halloween" class="btn theme-controller join-item" aria-label="Halloween" value="halloween" /><input type="radio" name="theme-buttons" id="th-garden" class="btn theme-controller join-item" aria-label="Garden" value="garden" /><input type="radio" name="theme-buttons" id="th-forest" class="btn theme-controller join-item" aria-label="Forest" value="forest" /><input type="radio" name="theme-buttons" id="th-aqua" class="btn theme-controller join-item" aria-label="Aqua" value="aqua" /><input type="radio" name="theme-buttons" id="th-lofi" class="btn theme-controller join-item" aria-label="Lofi" value="lofi" /><input type="radio" name="theme-buttons" id="th-pastel" class="btn theme-controller join-item" aria-label="Pastel" value="pastel" /><input type="radio" name="theme-buttons" id="th-fantasy" class="btn theme-controller join-item" aria-label="Fantasy" value="fantasy" /><input type="radio" name="theme-buttons" id="th-wireframe" class="btn theme-controller join-item" aria-label="Wireframe" value="wireframe" /><input type="radio" name="theme-buttons" id="th-black" class="btn theme-controller join-item" aria-label="Black" value="black" /><input type="radio" name="theme-buttons" id="th-luxury" class="btn theme-controller join-item" aria-label="Luxury" value="luxury" /><input type="radio" name="theme-buttons" id="th-dracula" class="btn theme-controller join-item" aria-label="Dracula" value="dracula" /><input type="radio" name="theme-buttons" id="th-cmyk" class="btn theme-controller join-item" aria-label="CMYK" value="cmyk" /><input type="radio" name="theme-buttons" id="th-autumn" class="btn theme-controller join-item" aria-label="Autumn" value="autumn" /><input type="radio" name="theme-buttons" id="th-business" class="btn theme-controller join-item" aria-label="Business" value="business" /><input type="radio" name="theme-buttons" id="th-acid" class="btn theme-controller join-item" aria-label="Acid" value="acid" /><input type="radio" name="theme-buttons" id="th-lemonade" class="btn theme-controller join-item" aria-label="Lemonade" value="lemonade" /><input type="radio" name="theme-buttons" id="th-night" class="btn theme-controller join-item" aria-label="Night" value="night" /><input type="radio" name="theme-buttons" id="th-coffee" class="btn theme-controller join-item" aria-label="Coffee" value="coffee" /><input type="radio" name="theme-buttons" id="th-winter" class="btn theme-controller join-item" aria-label="Winter" value="winter" /><input type="radio" name="theme-buttons" id="th-dim" class="btn theme-controller join-item" aria-label="Dim" value="dim" /><input type="radio" name="theme-buttons" id="th-nord" class="btn theme-controller join-item" aria-label="Nord" value="nord" /><input type="radio" name="theme-buttons" id="th-sunset" class="btn theme-controller join-item" aria-label="Sunset" value="sunset" />    
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@latest/dist/keycloak.min.js"></script>
+    <script src="/public/src/shared.js"></script>
+    <div id="loginBtn"></div>
+    <div id="logoutBtn"></div>
+
+    </script>
+    <script>
+      let url = {url: "https://chat.mrpickle.ca"}
+        let adminThing = JSON.parse(localStorage.getItem("adminAutoRedirect"))
+        if (!adminThing){
+          adminThing = {redirect:false}
+          localStorage.setItem("adminAutoRedirect", false)
+        }
+        document.getElementById("autoRedirect").checked = adminThing.redirect
+        console.log(localStorage.getItem("adminAutoRedirect"))
+        document.getElementById("autoRedirect").addEventListener("change", (event)=>{
+            localStorage.setItem("adminAutoRedirect", JSON.stringify({"redirect":document.getElementById("autoRedirect").checked}))
+        })
+        let theme = JSON.parse(localStorage.getItem("settings")).Theme
+        console.log("Theme: " + theme)
+        try{
+        document.getElementById(`th-${theme}`).checked = true
+        }
+        catch{
+          document.getElementById('th-light').checked=true
+        }
+        async function getUrl(){
+
+            let startTime = Date.now()
+            let step = 0;
+            document.getElementById("waitText").innerText = "Waiting on KC token"
+            while (!keycloak.tokenParsed){
+                document.getElementById("time").innerText = `${10000 - (Date.now() - startTime)} ms`
+                if(!keycloak.authenticationSuccess && Date.now() - startTime > 10000){
+                    
+                    document.getElementById("header").innerHTML = "You are not logged in, please <a href=\"#\" onclick=\"keycloak.login()\">login</a>"
+                    return
+                }
+               console.log(`waiting for KC token for ${Date.now()-startTime} ms`)
+                step +=1
+                step %=3
+                document.getElementById("dots").innerText = ".".repeat(step);
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            document.getElementById("time").innerHTML = ""
+            document.getElementById("waitText").innerHTML = "Token Aquired, contacting server for URL"
+           console.log("TOKEN AQUIRED, Continuing")
+
+            let urlRaw = await fetch("/api/liveshare-url", {
+                "method":"GET",
+                "headers":{
+                    "Authorization":`Bearer ${keycloak.token}`
+                }
+            })
+
+            url = await urlRaw.json()
+            document.getElementById("waitText").innerHTML = "URL aquired, redirecting..."
+
+            if(JSON.parse(localStorage.getItem("adminAutoRedirect")).redirect){
+                window.location.href = url.url
+            }else{
+                document.getElementById("waitText").innerHTML = "Redirect not selected, click the button or toggle redirect on to be auto redirected next time"
+                let tooltipContainer = document.getElementById("tooltipContainer")
+                tooltipContainer.classList.remove("hidden")
+                tooltipContainer.setAttribute("data-tip", `Redirects to: ${url.url}`);
+                console.log("URL: " + url.url)
+            }
+        }
+        getUrl()
+    </script>
+  </body>
+</html>

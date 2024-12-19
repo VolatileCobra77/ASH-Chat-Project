@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html data-theme="synthwave" class="h-full">
+<html data-theme="" class="h-full">
     <head>
-        <link rel="stylesheet" href="/public/src/output.css">
+        <link rel="stylesheet" href="/public/src/custom.css">
+        <link rel="stylesheet" href="/public/src/output.css?v=12312312">
+        
         <link rel="stylesheet" href="https://static.snoweb.io/snowebsvg/dist/css/themes-0.0.131.css">
         <link rel="preload" as="image" href="/public/media/root/default_pfp.png">
         <meta name="viewport" content="viewport-fit=cover">
@@ -27,7 +29,7 @@
     </head>
     <body class="flex flex-row h-dvh">
         <div class="flex flex-col flex-grow">
-            <div id="chat-window" class="ml-5 mt-5 mr-0 mb-0 w-full bg-neutral max-w-[70vw] min-w-[70vw] h-full flex flex-col max-h-full overflow-y-auto overflow-x-hidden whitespace-normal border border-primary rounded-xl p-4">
+            <div id="chat-window" class="ml-5 mt-5 mr-0 mb-0 w-full bg-neutral max-w-[70vw] min-w-[70vw] h-full flex flex-col max-h-full overflow-y-auto overflow-x-hidden whitespace-normal border border-primary rounded-xl p-4 font-victor">
             </div>
 
 
@@ -104,6 +106,32 @@
                             <input type="checkbox" name="my-accordion-3" />
                             <div class="collapse-title text-xl font-medium">Theme</div>
                             <div class="collapse-content">
+                              <div class="dropdown mb-[10px]">
+                                <div tabindex="0" role="button" class="btn m-1">
+                                  Custom Theme
+                                  <svg
+                                    width="12px"
+                                    height="12px"
+                                    class="inline-block h-2 w-2 fill-current opacity-60"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 2048 2048">
+                                    <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+                                  </svg>
+                                </div>
+                                <ul tabindex="0" class="dropdown-content bg-base-300 rounded-box z-[1] w-52 p-2 shadow-2xl">
+                                  <li>
+                                    <button class="btn btn-primary btn-sm">New Theme</button>
+                                  </li>
+                                  <li>
+                                    <input
+                                      type="radio"
+                                      name="theme-buttons"
+                                      class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
+                                      aria-label="Custom"
+                                      value="`${username}-custom`" />
+                                  </li>
+                                </ul>
+                              </div>
                                 <div id="theme-buttons" class="join join-vertical">
                                     <input type="radio" name="theme-buttons" id="th-light" class="btn theme-controller join-item" aria-label="Light" value="light" />
                                     <input type="radio" name="theme-buttons" id="th-dark" class="btn theme-controller join-item" aria-label="Dark" value="dark" />
@@ -254,6 +282,7 @@
                                         <label for="debugLevel-none"> None </label>
                                       
                                     </div>
+                                    <a href="/liveshare">Liveshare</a>
                                     <script>
                                       document.addEventListener("DOMContentLoaded", ()=>{
                                         //document.getElementById("debug-enabled").checked = settings.Debug.enabled

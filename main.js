@@ -223,6 +223,25 @@ function makeMediaFolders(email){
 
 }
 
+app.get("/api/liveshare-url", (req,res)=>{
+  authenticateToken(req,res,null, (err,user)=>{
+    if(err){
+      res.status(500).json({"error":err.toString()})
+      return
+    }
+    if (!user){
+      res.status(500).json("error")
+      return
+    }
+    if(user.realm_access.roles.includes("Admin")){
+      res.status(200).json({"url":`${fs.readFileSync(path.join(__dirname, "liveshare.txt"), "utf-8")}`})
+      return
+    }
+    res.status(403).json("Unauthorized")
+    return
+  })
+})
+
 function readBlockList(){
   return JSON.parse(fs.readFileSync("blocklist.json", 'utf-8'));
 }
@@ -360,7 +379,6 @@ function getChannel(channelId){
   let channels = readChannels()
   for(let channel of channels){
     if (channel.id == channelId){
-      console.log(channel.name)
       return channel
     }
   }
@@ -710,6 +728,40 @@ app.get("/api/tokenTester",(req,res)=>{
     })
 })
 
+app.get("/api/theme/upload", (req,res)=>{
+  let data = req.body
+  if (!data, !data.themeName, !data.username, !data.primary, !data.secondary, !data.accent, !data.base100){
+    res.status(400).json({"error":"Not all required fields are present"})
+    return
+  }
+  let themeObject = {
+    [`${data.username}-${data.themeName}`]: {
+      "primary": data.primary,
+      "secondary": data.secondary,
+      "accent": data.accent,
+      "neutral": data.neutral || "#374151",
+      "base-100": data.base100,
+      "base-200": data.base200,
+      "base-300": data.base300,
+      "base-content": data.baseContent,
+      "info": data.info || "#3B82F6",
+      "success": data.success || "#10B981",
+      "warning": data.warning || "#F59E0B",
+      "error": data.error || "#EF4444",
+      "--rounded-box": data.roundedBox || "1rem",
+      "--rounded-btn": data.roundedBtn || "0.5rem",
+      "--rounded-badge": data.roundedBadge || "1.5rem",
+      "--animation-btn": data.animationBtn ||"0.3s",
+      "--animation-input": data.animationInput ||"0.25s",
+      "--btn-text-case": data.btnTextCase || "normal",
+      "--btn-focus-scale": data.btnFocusScale || "0.98",
+      "--border-btn": data.borderBtn || "2px",
+      "--tab-border": data.tabBorder || "2px",
+      "--tab-radius": data.tabRad || "0.75rem"
+    }
+  }
+
+})
 
 app.listen(80, ()=>{
     console.log("Webserver is UP!")
@@ -828,10 +880,10 @@ async function updateUsersAndGroups(ws, messageJson, token) {
   }
   
   if (!usersJson[0]){
-    console.log("NO USER JSON")
+
     usersJson = [{"username":"NO ONLINE USERS", "type":"online"}]
   }
-  //console.log("outputted user json: " + usersJson)
+  //console.log("outputted user json: " + usersJson) 
   ws.send(JSON.stringify({
     "ip": "SERVER",
     "username": "SERVER",
@@ -990,7 +1042,6 @@ server.on('connection', (ws, req) => {
           let channels= readChannels()
           
           let channel = channels.find(channel => channel.id == messageJson.channelId);
-          console.log("removing " + messageJson.content)
           channel.messages = channel.messages.filter(message => message.id != messageJson.content)
           console.log(channel.messages)
           saveChannels(channels)
@@ -1016,6 +1067,9 @@ server.on('connection', (ws, req) => {
               "content": "No channel ID"
           }));
           return
+          }
+          if(!authenticateChannel(tokenParsed.email, messageJson.channelId)){
+            return;
           }
           ws.send(JSON.stringify({
             "ip": "SERVER",

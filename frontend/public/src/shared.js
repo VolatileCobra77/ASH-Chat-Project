@@ -6,9 +6,6 @@ let accountBtn = document.getElementById("logoutBtn")
     realm: 'mrpickle.ca',              // Your Keycloak realm name
     clientId: 'ChatClient'       // Your Keycloak client Id
   });
-  const status = document.getElementById('status');
-  const tokenDisplay = document.getElementById('token-display');
-  const tokenElement = document.getElementById('token');
 
   // Initialize Keycloak
   keycloak.init({ onLoad: 'check-sso', silentCheckSsoRedirectUri:window.location.origin + '/public/silent-check-sso.html',  pkceMethod: 'S256', checkLoginIframe: true, enableLogging: true, })
